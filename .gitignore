@@ -1,0 +1,36 @@
+.venv/
+__pycache__/
+*.pyc
+data/raw/
+data/interim/
+data/templates/*.png
+!data/templates/.gitkeep
+.pytest_cache/
+data/inbox/*
+!data/inbox/README.txt
+out/
+data/synthetic/
+out-synth/
+out-trace/
+out-offset/
+
+# Generated from the templates, which are patient pages: make_box_tool.py bakes
+# each one into the HTML as a base64 data URI. Regenerate it locally with
+# scripts/make_box_tool.py — never commit it. The un-filled source that IS safe
+# to track is scripts/box_tool.template.html.
+docs/box-tool.html
+
+out-testdata/
+data/templates-testdata/
+
+# Bundled synthetic test data. Safe to COPY to another machine you control --
+# every page is generated, no patient wrote on any of them -- but each one is
+# rendered on a form background cut from a real card, so it is institutional
+# imagery and must not reach a public remote.
+testdata/
+
+# Build artefact of `pip install -e .`
+src/*.egg-info/
+
+# Per-export dependency bundle (pip download --only-binary :all:)
+wheels/

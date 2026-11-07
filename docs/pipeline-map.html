@@ -1,0 +1,632 @@
+<title>OPD Card Pipeline Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+
+<style>
+/* ---- Light palette: complete, defined on bare :root ---------------------- */
+:root {
+  --ground:      #EEF1F2;
+  --surface:     #FBFCFD;
+  --surface-2:   #E6EBEC;
+  --ink:         #172126;
+  --ink-2:       #5C6C73;
+  --ink-3:       #8798A0;
+  --rule:        #C7D1D5;
+  --rule-soft:   #DBE2E5;
+  --accent:      #2E5FA3;   /* ballpoint blue — the ink these forms are filled in with */
+  --accent-soft: #DCE6F3;
+  --done:        #2C7A52;
+  --done-soft:   #D6E9DF;
+  --pending:     #99691A;
+  --pending-soft:#F0E3C9;
+  --blocked:     #A03A3A;
+  --blocked-soft:#F2DBDB;
+
+  --measure: 68ch;
+  --r: 3px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #10161A;
+    --surface:     #182126;
+    --surface-2:   #1F2A30;
+    --ink:         #E2EAED;
+    --ink-2:       #93A4AC;
+    --ink-3:       #6B7C85;
+    --rule:        #2C383E;
+    --rule-soft:   #232E34;
+    --accent:      #79ACEC;
+    --accent-soft: #1D2E44;
+    --done:        #62B98D;
+    --done-soft:   #17301F;
+    --pending:     #D6A64B;
+    --pending-soft:#332714;
+    --blocked:     #E08B8B;
+    --blocked-soft:#361D1D;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:      #10161A;
+  --surface:     #182126;
+  --surface-2:   #1F2A30;
+  --ink:         #E2EAED;
+  --ink-2:       #93A4AC;
+  --ink-3:       #6B7C85;
+  --rule:        #2C383E;
+  --rule-soft:   #232E34;
+  --accent:      #79ACEC;
+  --accent-soft: #1D2E44;
+  --done:        #62B98D;
+  --done-soft:   #17301F;
+  --pending:     #D6A64B;
+  --pending-soft:#332714;
+  --blocked:     #E08B8B;
+  --blocked-soft:#361D1D;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px 96px; }
+
+/* ---- masthead ----------------------------------------------------------- */
+.masthead {
+  border-bottom: 2px solid var(--ink);
+  padding: 56px 0 22px;
+  margin-bottom: 34px;
+}
+.eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 14px;
+}
+h1 {
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 600; line-height: 1.08;
+  letter-spacing: -.021em;
+  margin: 0 0 14px; text-wrap: balance;
+}
+.standfirst {
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-size: 17px; line-height: 1.6;
+  color: var(--ink-2);
+  max-width: var(--measure); margin: 0;
+}
+
+/* ---- status strip ------------------------------------------------------- */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin-bottom: 46px;
+}
+.stat { background: var(--surface); padding: 14px 16px; }
+.stat dt {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px; letter-spacing: .11em; text-transform: uppercase;
+  color: var(--ink-2); margin: 0 0 6px;
+}
+.stat dd {
+  margin: 0; font-size: 22px; font-weight: 600;
+  font-variant-numeric: tabular-nums; letter-spacing: -.01em;
+}
+.stat dd small { font-size: 13px; font-weight: 400; color: var(--ink-3); }
+
+/* ---- sections ----------------------------------------------------------- */
+section { margin-bottom: 60px; scroll-margin-top: 20px; }
+h2 {
+  font-size: 12px; font-weight: 600;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  letter-spacing: .15em; text-transform: uppercase;
+  color: var(--ink);
+  padding-bottom: 9px; margin: 0 0 22px;
+  border-bottom: 1px solid var(--ink);
+}
+.lede {
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-size: 16px; color: var(--ink-2);
+  max-width: var(--measure); margin: -6px 0 26px;
+}
+
+/* ---- figure ------------------------------------------------------------- */
+figure { margin: 0 0 46px; }
+.figbox {
+  background: var(--surface); border: 1px solid var(--rule);
+  padding: 26px 22px; overflow-x: auto;
+}
+figure svg { display: block; width: 100%; max-width: 700px; height: auto; margin: 0 auto; }
+figcaption {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11.5px; line-height: 1.55; color: var(--ink-2);
+  margin-top: 12px; max-width: var(--measure);
+}
+
+/* ---- stage cards -------------------------------------------------------- */
+.stages { display: flex; flex-direction: column; gap: 18px; }
+.stage {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--ink-3);
+  padding: 22px 24px;
+}
+.stage[data-status="done"]    { border-left-color: var(--done); }
+.stage[data-status="blocked"] { border-left-color: var(--blocked); }
+.stage[data-status="todo"]    { border-left-color: var(--rule); }
+
+.stage-head {
+  display: flex; align-items: baseline; gap: 14px;
+  flex-wrap: wrap; margin-bottom: 4px;
+}
+.stage-num {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; font-weight: 600; color: var(--ink-3);
+  letter-spacing: .08em;
+}
+.stage-name { font-size: 20px; font-weight: 600; letter-spacing: -.012em; margin: 0; }
+.stage-file {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11.5px; color: var(--ink-3); margin-left: auto;
+}
+.stage-why {
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-size: 15px; line-height: 1.62; color: var(--ink-2);
+  max-width: var(--measure); margin: 10px 0 18px;
+}
+.stage-why em { color: var(--ink); font-style: italic; }
+
+.io { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: 1px;
+      background: var(--rule-soft); border: 1px solid var(--rule-soft); }
+.io > div { background: var(--surface); padding: 13px 15px; }
+.io h4 {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--ink-3); margin: 0 0 7px; font-weight: 500;
+}
+.io p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+.io code, .mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; color: var(--accent);
+}
+
+/* ---- pills -------------------------------------------------------------- */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: var(--r); white-space: nowrap;
+}
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill-done    { background: var(--done-soft);    color: var(--done); }
+.pill-blocked { background: var(--blocked-soft); color: var(--blocked); }
+.pill-todo    { background: var(--surface-2);    color: var(--ink-2); }
+.pill-pending { background: var(--pending-soft); color: var(--pending); }
+
+/* ---- generic grid of parts --------------------------------------------- */
+.parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr)); gap: 16px; }
+.part { background: var(--surface); border: 1px solid var(--rule); padding: 17px 19px; }
+.part-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 9px; }
+.part h3 {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px; font-weight: 600; margin: 0; letter-spacing: -.005em;
+}
+.part p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+
+/* ---- tables ------------------------------------------------------------- */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 10px 15px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+thead th {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-2); font-weight: 500;
+  border-bottom: 1px solid var(--rule);
+}
+tbody tr:last-child td { border-bottom: none; }
+td.num { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+td strong { font-weight: 600; }
+
+/* ---- log ---------------------------------------------------------------- */
+.log { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--rule); background: var(--surface); }
+.entry { padding: 17px 20px; border-bottom: 1px solid var(--rule-soft); }
+.entry:last-child { border-bottom: none; }
+.entry-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.entry h3 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -.008em; }
+.tag {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-3); border: 1px solid var(--rule); padding: 1px 6px; border-radius: var(--r);
+}
+.entry p {
+  font-family: "IBM Plex Serif", Georgia, serif;
+  margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--ink-2); max-width: var(--measure);
+}
+.entry p + p { margin-top: 8px; }
+
+ul.plain { margin: 0; padding-left: 19px; }
+ul.plain li { font-size: 14px; line-height: 1.62; color: var(--ink-2); margin-bottom: 8px; max-width: var(--measure); }
+ul.plain li strong { color: var(--ink); font-weight: 600; }
+
+footer {
+  border-top: 1px solid var(--rule); padding-top: 20px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px; color: var(--ink-3); line-height: 1.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">ai-htr · hospital opd cards · build map</p>
+  <h1>How the OPD card pipeline is put together</h1>
+  <p class="standfirst">Every moving part of the cropping pipeline, what goes in, what comes out, and how far along each one is. Scope right now is one clinical value — blood pressure — read from five places across four different form layouts.</p>
+</header>
+
+<dl class="strip">
+  <div class="stat"><dt>Pipeline stages</dt><dd>5<small> / 5 wired</small></dd></div>
+  <div class="stat"><dt>Tests passing</dt><dd>123</dd></div>
+  <div class="stat"><dt>Boxes drawn</dt><dd>9<small> / 9</small></dd></div>
+  <div class="stat"><dt>Templates</dt><dd>4<small> / 12 pages</small></dd></div>
+  <div class="stat"><dt>Crop coverage</dt><dd>0.973<small> worst case</small></dd></div>
+  <div class="stat"><dt>Python written</dt><dd>5311<small> lines</small></dd></div>
+</dl>
+
+<section>
+  <h2>The shape of it</h2>
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 700 690" role="img" aria-label="Vertical flow: a scanned page passes through normalize, form identification, registration, crop and read. All five stages are wired; stage 4's reader is a baseline only. The template store feeds stages 1 and 2; the form config feeds stage 3.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+          <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity=".45"/>
+          </marker>
+        </defs>
+
+        <g font-family="IBM Plex Mono, monospace" font-size="12" fill="currentColor">
+
+          <!-- input -->
+          <rect x="150" y="8" width="240" height="34" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+          <text x="270" y="30" text-anchor="middle" opacity=".72">scanned or photographed page</text>
+          <line x1="270" y1="42" x2="270" y2="76" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+
+          <!-- stage 0 -->
+          <rect x="110" y="78" width="320" height="62" fill="none" stroke="#2F8A5E" stroke-width="2"/>
+          <text x="126" y="102" font-size="11" opacity=".55">STAGE 0</text>
+          <text x="126" y="122" font-size="14" font-weight="600">normalize</text>
+          <text x="414" y="122" text-anchor="end" font-size="11" opacity=".55">deskew · CLAHE · letterbox</text>
+          <line x1="270" y1="140" x2="270" y2="182" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+          <text x="284" y="166" font-size="11" opacity=".72">2480 × 3508 grayscale</text>
+
+          <!-- stage 1 -->
+          <rect x="110" y="184" width="320" height="62" fill="none" stroke="#2F8A5E" stroke-width="2"/>
+          <text x="126" y="208" font-size="11" opacity=".55">STAGE 1</text>
+          <text x="126" y="228" font-size="14" font-weight="600">identify form</text>
+          <text x="414" y="228" text-anchor="end" font-size="11" opacity=".55">ORB · RANSAC inliers</text>
+          <line x1="270" y1="246" x2="270" y2="288" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+          <text x="284" y="272" font-size="11" opacity=".72">form_id, or UNKNOWN</text>
+
+          <!-- stage 2 -->
+          <rect x="110" y="290" width="320" height="62" fill="none" stroke="#2F8A5E" stroke-width="2"/>
+          <text x="126" y="314" font-size="11" opacity=".55">STAGE 2</text>
+          <text x="126" y="334" font-size="14" font-weight="600">register</text>
+          <text x="414" y="334" text-anchor="end" font-size="11" opacity=".55">homography · warp</text>
+          <line x1="270" y1="352" x2="270" y2="394" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+          <text x="284" y="378" font-size="11" opacity=".72">page in canonical space</text>
+
+          <!-- stage 3 -->
+          <rect x="110" y="396" width="320" height="62" fill="none" stroke="#2F8A5E" stroke-width="2"/>
+          <text x="126" y="420" font-size="11" opacity=".55">STAGE 3</text>
+          <text x="126" y="440" font-size="14" font-weight="600">crop fields</text>
+          <text x="414" y="440" text-anchor="end" font-size="11" opacity=".55">tight + context</text>
+          <line x1="270" y1="458" x2="270" y2="500" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+          <text x="284" y="484" font-size="11" opacity=".72">8 field crops</text>
+
+          <!-- stage 4 -->
+          <rect x="110" y="502" width="320" height="62" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" opacity=".45"/>
+          <text x="126" y="526" font-size="11" opacity=".45">STAGE 4</text>
+          <text x="126" y="546" font-size="14" font-weight="600" opacity=".55">read values</text>
+          <text x="414" y="546" text-anchor="end" font-size="11" opacity=".5">baseline only</text>
+          <line x1="270" y1="564" x2="270" y2="606" stroke="currentColor" stroke-width="1.4" opacity=".45" marker-end="url(#arS)"/>
+
+          <!-- output -->
+          <rect x="150" y="608" width="240" height="36" fill="none" stroke="currentColor" stroke-width="1" opacity=".45"/>
+          <text x="270" y="631" text-anchor="middle" opacity=".6">{ systolic: 143, diastolic: 90 }</text>
+
+          <!-- side: template store -->
+          <rect x="484" y="212" width="200" height="52" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+          <text x="500" y="234" font-size="11.5" opacity=".72">template store</text>
+          <text x="500" y="252" font-size="11" opacity=".5">4 canonical PNGs</text>
+          <path d="M 484 228 L 452 228 L 452 215 L 434 215" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="3 3" opacity=".55" marker-end="url(#arS)"/>
+          <path d="M 484 250 L 452 250 L 452 321 L 434 321" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="3 3" opacity=".55" marker-end="url(#arS)"/>
+
+          <!-- side: config -->
+          <rect x="484" y="404" width="200" height="52" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+          <text x="500" y="426" font-size="11.5" opacity=".72">form config</text>
+          <text x="500" y="444" font-size="11" opacity=".5">bbox per field, YAML</text>
+          <path d="M 484 430 L 452 430 L 452 427 L 434 427" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="3 3" opacity=".55" marker-end="url(#arS)"/>
+        </g>
+      </svg>
+    </div>
+    <figcaption>Solid green = built and tested. Dashed = not built. The two dashed side-feeds are the reason a new form costs a config file rather than new code: stages 1 and 2 read the template store, stage 3 reads the box coordinates, and none of them are hard-coded to a particular form.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>The five stages</h2>
+  <p class="lede">Each stage does one thing and hands a well-defined object to the next. That separation is what lets stage 4 be swapped later without touching anything above it.</p>
+
+  <div class="stages">
+
+    <article class="stage" data-status="done">
+      <div class="stage-head">
+        <span class="stage-num">STAGE 0</span>
+        <h3 class="stage-name">Normalize</h3>
+        <span class="pill pill-done">Built</span>
+        <span class="stage-file">normalize.py · 125 lines</span>
+      </div>
+      <p class="stage-why">Whatever came off a phone or a flatbed has to become the same kind of object before anything else can reason about it. Three steps. <em>Deskew</em> runs Canny edge detection then a Hough transform to find straight segments, keeps only those spanning at least 30% of the page width and within 15° of horizontal, and takes their median angle — the forms are covered in long printed rules, which is an unusually strong signal, and handwriting strokes are too short to outvote them. <em>CLAHE</em> evens out lighting so a desk photo and a scan present the same features. <em>Letterbox</em> resizes into canonical space preserving aspect ratio and padding with white, rather than stretching, which would inject distortion the next stage has to undo.</p>
+      <div class="io">
+        <div><h4>Input</h4><p>Any JPEG or PNG page, any size, any tilt</p></div>
+        <div><h4>Output</h4><p><code>NormalizedPage</code> — grayscale <span class="mono">2480×3508</span>, upright, plus the skew angle and scale it removed</p></div>
+        <div><h4>Evidence</h4><p>Found 0.92° on the angled Neuro photo, 0.64° on Nutrition. Round-trip deskew tested at four angles.</p></div>
+      </div>
+    </article>
+
+    <article class="stage" data-status="done">
+      <div class="stage-head">
+        <span class="stage-num">STAGE 1</span>
+        <h3 class="stage-name">Identify the form</h3>
+        <span class="pill pill-done">Built</span>
+        <span class="stage-file">formid.py · 131 lines</span>
+      </div>
+      <p class="stage-why">The keystone. ORB finds up to 5000 keypoints — distinctive corners and rule intersections — and fingerprints each one. Those get matched against every known template, filtered by <em>Lowe's ratio test</em> (if a keypoint's best and second-best matches are equally good it is ambiguous, so it is discarded — critical on forms full of repeated checkboxes and dotted rules), then fed to RANSAC, which finds the largest set of matches that agree on a single transform. The size of that agreeing set is the score. A trained classifier was rejected because it always names one of its classes; this can decline, which matters when the hospital form family runs to dozens of variants we will never all have.</p>
+      <div class="io">
+        <div><h4>Input</h4><p>A normalized page, plus the template store</p></div>
+        <div><h4>Output</h4><p>A ranked list, and a <span class="mono">form_id</span> only if the winner clears both gates — otherwise <span class="mono">UNKNOWN</span></p></div>
+        <div><h4>Gates</h4><p>≥ 25 inliers, <em>and</em> ≥ 6.5× the runner-up</p></div>
+        <div><h4>Evidence</h4><p>4 / 4 known forms correct. 8 / 8 unseen forms correctly refused.</p></div>
+      </div>
+    </article>
+
+    <article class="stage" data-status="done">
+      <div class="stage-head">
+        <span class="stage-num">STAGE 2</span>
+        <h3 class="stage-name">Register</h3>
+        <span class="pill pill-done">Built</span>
+        <span class="stage-file">register.py · 124 lines</span>
+      </div>
+      <p class="stage-why">Same machinery as stage 1, but now the transform itself is the product. A <em>homography</em> is a 3×3 matrix describing how one flat plane maps onto another under any camera viewpoint — rotation, scale, shift and perspective keystone all in one object. Paper is flat, so it is exactly the right model. Once applied, the page occupies the same coordinate system as its template, which is what makes fixed box coordinates valid again. The result object carries its own diagnostics — inlier count, inlier ratio, mean reprojection error over inliers only — because everything downstream trusts this step and a silent bad fit would poison all of it.</p>
+      <div class="io">
+        <div><h4>Input</h4><p>A normalized page and its chosen template</p></div>
+        <div><h4>Output</h4><p>Warped page in canonical space, plus a <code>RegistrationResult</code> that knows whether to believe itself</p></div>
+        <div><h4>Evidence</h4><p>0.35 px mean error clean, 0.30 px degraded, 0 failures in 40 trials — against a BP field roughly 175×73 px</p></div>
+      </div>
+    </article>
+
+    <article class="stage" data-status="done">
+      <div class="stage-head">
+        <span class="stage-num">STAGE 3</span>
+        <h3 class="stage-name">Crop the fields</h3>
+        <span class="pill pill-done">Built</span>
+        <span class="stage-file">crop.py · 96 lines</span>
+      </div>
+      <p class="stage-why">Mechanically the easiest stage — read boxes from the config, slice the warped page, write out crops. The hard part was the human judgement: somebody has to say <em>this rectangle is the BP field</em>. All nine are now drawn. Two boxes get stored per field, mirroring the SiData+ dataset's own layout — a tight one around just the value, and a wider context one that includes the printed <span class="mono">BP</span> and <span class="mono">mmHg</span> labels. Crops are padded generously, because the scoring metric here is coverage, not IoU. Insert fields are the interesting case: the sticker is located at runtime by registering its template into the page, then its boxes are projected through that homography.</p>
+      <div class="io">
+        <div><h4>Input</h4><p>Warped page + the form's field list</p></div>
+        <div><h4>Output</h4><p>One tight and one context crop per field</p></div>
+        <div><h4>Evidence</h4><p>All 8 fields crop correctly, verified on the contact sheet. Insert projection lands the sticker origin on (252, 962) exactly, 99% inliers.</p></div>
+      </div>
+    </article>
+
+    <article class="stage" data-status="blocked">
+      <div class="stage-head">
+        <span class="stage-num">STAGE 4</span>
+        <h3 class="stage-name">Read the values</h3>
+        <span class="pill pill-pending">Baseline only</span>
+        <span class="stage-file">digits.py + read.py · 290 lines</span>
+      </div>
+      <p class="stage-why">The only stage that needs a model, and the only one that will touch the GPU. Three readers are declared in the schema, one per BP encoding pattern. The output contract is deliberate: <em>two integers, never a string</em>. <span class="mono">143/90</span> misread as <span class="mono">14/390</span> is a one-character slip and clinical nonsense, so accuracy has to be measured per entity rather than per character. The shipped baseline classifies segmented glyphs against templates rendered from OpenCV's Hershey faces — closed-set, so it <em>cannot</em> invent a digit, but vector fonts do not resemble pen strokes at 103 DPI and it reads poorly. Replacing it needs real handwritten digit data or the Typhoon OCR 1.5 route (2B, Apache 2.0, Thai-tuned; its 4-bit QAT variant fits the 8 GB card).</p>
+      <div class="io">
+        <div><h4>Input</h4><p>Tight and context crops from stage 3</p></div>
+        <div><h4>Output</h4><p><span class="mono">{ systolic: int, diastolic: int, confidence: float }</span></p></div>
+        <div><h4>Hard requirement</h4><p>Calibrated confidence and a human-review threshold, day one — not phase two</p></div><div><h4>Reality check</h4><p>The baseline reads <span class="mono">143/90</span> as <span class="mono">111/10</span>. Every error was caught downstream and flagged, so nothing wrong escaped — but the reader itself is not usable yet.</p></div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section>
+  <h2>Supporting machinery</h2>
+  <p class="lede">Not part of the runtime path, but the project does not work without them. These are what make a new form cost a config file instead of a code change.</p>
+  <div class="parts">
+
+    <div class="part">
+      <div class="part-top"><h3>schema.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Declares the seven field archetypes and three BP patterns, loads and validates form YAML, and reports which boxes are still undrawn. A form is data, not code — this file is what enforces that.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>synth.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Manufactures a plausible second scan: a homography we chose, plus blur, sensor noise and JPEG artefacts. With one page per form this is the only way to measure anything honestly.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>build_templates.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Turns raw corpus pages into canonical templates. With one sample per form the sample <em>is</em> the template — a circularity that shapes how everything gets evaluated.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>eval_registration.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Warps a template by a known transform, asks the pipeline to recover it, and reports where a grid of points lands. Ground truth is exact because we chose the transform.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>calibrate_margin.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Measures the confidence threshold instead of guessing it, by comparing margin distributions for forms that have templates against forms that do not.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>check_formid.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Runs identification across all 12 pages and writes red/cyan alignment overlays. Note these are self-matches — a plumbing check, not evidence.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>box-tool.html</h3><span class="pill pill-done">Built</span></div>
+      <p>Self-contained 1.5 MB page — templates embedded as data URIs, so it opens by double-click with no server. Pick a field, drag a rectangle, nudge the edges numerically. Wheel zoom anchors under the cursor, and a 5× loupe follows the pointer for placing small boxes.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>apply_boxes.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Writes the tool's JSON back into the configs, crops the triage sticker template out of the base card, and rebases the sticker's two BP boxes into sticker-relative coordinates so they survive it being glued on crooked.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>refine.py</h3><span class="pill pill-done">Built</span></div>
+      <p><b>Grow-only</b>, and that word was earned: free refinement measured min coverage 0.230 under moderate degradation against 0.973 with none at all — the feature built to stop clipping was itself clipping on degraded scans. It grows a crop to the ink actually present, and raises <span class="mono">possibly_clipped</span> when ink runs to the edge of its context or <span class="mono">field_empty</span> when nothing was written. Replayed against the real bug it recovers the clipped digit to within 2 px and converges on the same box whether the starting rectangle was right or wrong.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>validate.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Clinical plausibility guardrail. Grades a reading impossible / implausible / plausible and says why — never rewrites it. The load-bearing rule is that systolic must exceed diastolic, which is definitional, free, and the only thing in the pipeline that catches a clipped leading digit. Also surfaces readings sitting near a decision threshold, where one wrong digit flips management.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>Process dropped scans.cmd</h3><span class="pill pill-done">Built</span></div>
+      <p>The batch entrypoint. Drag scans onto it, or double-click to process the inbox; it opens the report itself. Underneath, <span class="mono">python -m aihtr</span> takes a folder and writes a self-contained <span class="mono">report.html</span> showing the raw input beside every crop, systolic and diastolic as separate numbers, and flagged rows highlighted, plus a manifest and the crop files, at about 0.4&nbsp;s a page. Reading is off by default — emitting numbers from a reader this weak would invite someone to believe them.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>eval_cropping.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Pushes each page back through stages 0-3 under four levels of manufactured re-scan damage and scores coverage against the clean run. It is what caught refinement destabilising the crop — a bug invisible in the aggregate, which looked fine at mean 0.954.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>make_synthetic.py</h3><span class="pill pill-done">Built</span></div>
+      <p>Renders plausible BP values into known boxes across all four forms, warps and degrades the page, and writes ground truth beside it — so the cropper can be scored rather than eyeballed. A quarter of values are deliberately written larger than their box; refinement captured every one at 1.000 coverage.</p>
+    </div>
+
+    <div class="part">
+      <div class="part-top"><h3>Real-scan eval set</h3><span class="pill pill-todo">Not started</span></div>
+      <p>Hand-labelled boxes on genuine scans. Everything measured so far is synthetic; without this there is no way to know what the domain gap actually costs.</p>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>What is being extracted</h2>
+  <p class="lede">One clinical concept, five places, three structurally different encodings. Narrow enough to finish; broad enough that surviving it proves the multi-template design works.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Pattern</th><th>How the paper encodes it</th><th>Where</th><th>Fields</th></tr></thead>
+      <tbody>
+        <tr><td class="num"><strong>A</strong></td><td>One blank; the writer supplies the slash — <span class="mono">143/90</span></td><td>Base OPD card · Nutrition 0190</td><td class="num">2</td></tr>
+        <tr><td class="num"><strong>B</strong></td><td>Two blanks flanking a <em>printed</em> slash</td><td>Triage sticker · MS form v2.4</td><td class="num">4</td></tr>
+        <tr><td class="num"><strong>C</strong></td><td>Two separately labelled blanks, no slash; label order carries the meaning</td><td>Neuro — <span class="mono">Home SBP</span> / <span class="mono">DBP</span></td><td class="num">2</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lede" style="margin-top:18px">Five sites, eight fields — patterns B and C each split into a systolic and a diastolic box. That is the <span class="mono">0 / 8</span> in the status strip, and it is a different eight from the eight unknown forms stage 1 refuses.</p>
+</section>
+
+<section>
+  <h2>Decisions and corrections</h2>
+  <p class="lede">What changed, and why. The corrections are the more useful half — each one is a place where a plausible assumption turned out to be wrong under measurement.</p>
+  <div class="log">
+
+    <div class="entry">
+      <div class="entry-head"><h3>The printed run number is not a form ID</h3><span class="tag">Disproved</span></div>
+      <p>Every page carries a print code in its footer, which looked like a free machine-readable form identifier. It is not: Nutrition 0190 and the Chest clinic form both carry <span class="mono">3591/30,000/Mat.10039712</span> despite entirely different layouts. It marks the paper stock and print batch, not the form.</p>
+      <p>No harm done — stage 1 was already designed around feature matching. But it removed a shortcut, and it is recorded so nobody proposes it again.</p>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head"><h3>The confidence threshold was guessed, then measured</h3><span class="tag">Corrected</span></div>
+      <p>Stage 1's margin gate started at 1.5×, which let five wrong forms through. Seven of the twelve pages are the <em>same base OPD card</em> with a different overlay printed on it, so a wrong form still earns real inliers from shared header, rules and footer.</p>
+      <p>Measuring the actual distributions under perturbation gave correct-form margins of 14.3×–152× against wrong-form margins of 1.0×–3.1×. 6.5 sits in that gap with roughly 2× clearance on both sides, and a test pins it so it cannot quietly drift back down.</p>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head"><h3>Straightening the page could break registration</h3><span class="tag">Corrected</span></div>
+      <p>Deskew measures page tilt from the median angle of the printed rules — exact under pure rotation, catastrophic under perspective, where keystone stops the rules being parallel and the median becomes meaningless. It reported &minus;8.5° on a page tilted &minus;2.5°, and normalising then left the page <em>more</em> crooked: registration dropped from 63 inliers to 19 and failed outright.</p>
+      <p>The lines announce their own unreliability — parallel rules spread 0.06–0.47°, perspective spreads 3.5–7.3° — so above a threshold deskew now declines and leaves the page alone. Safe, because a homography absorbs rotation regardless: 10° registers fine with 2,000+ inliers and no straightening at all.</p>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head"><h3>The card was being dragged around by its sticker</h3><span class="tag">Corrected</span></div>
+      <p>Inserts exist because a triage sheet is glued on by hand and lands somewhere different each time. That case had never been tested — every evaluation perturbed the whole page, which moves the sticker with the form. Testing it properly showed the sticker carrying 89–100% of the registration inliers, so the page was being aligned to the sticker rather than the card: moving it 60&nbsp;px dropped the card's own BP field from 1.000 similarity to 0.018.</p>
+      <p>Fixed by masking declared insert regions out of the template before both form identification and registration. The same fix cured a second symptom — a card with no sticker at all had been failing identification outright.</p><p>A follow-up sweep found the sticker can sit essentially anywhere — shifted 1100&nbsp;px, rotated 90°, rescaled, even hanging off the page edge — with the card unaffected. The one case that did break was a sticker lying <em>on top of</em> a field, which cropped the sticker's content and raised nothing; fields overlapping an insert's footprint are now flagged <span class="mono">occluded_by</span>.</p>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head"><h3>Canonical space is 300 DPI even though every source is 103</h3><span class="tag">Decision</span></div>
+      <p>All twelve pages are LINE exports capped at 1200 px tall. Pinning canonical space to that would force every future good scan to be downsampled to match, and that loss would be permanent. Upsampling today is lossy but harmless, and the configs never need rewriting.</p>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head"><h3>Crops are scored on coverage, not IoU</h3><span class="tag">Decision</span></div>
+      <p>IoU is the standard box metric and the wrong one here. A crop at 0.6 IoU that clips the <span class="mono">0</span> off <span class="mono">90</span> is a total failure; 0.6 IoU with generous margin is fine. The reader downstream does not mind whitespace, so boxes are padded deliberately.</p>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head"><h3>LocateAnything-3B dropped</h3><span class="tag">Decision</span></div>
+      <p>Attractive for zero-shot auto-labelling, but ~7 GB in bf16 on an 8 GB card, Linux-only with no WSL installed, and weakest exactly where this task lives — small text on a large document. Its licence also bars commercial use, which would matter for anything that becomes a real hospital tool.</p>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head"><h3>Two environment traps, found the hard way</h3><span class="tag">Fixed</span></div>
+      <p>OpenCV 5.0 changed <span class="mono">HoughLinesP</span>'s output shape from <span class="mono">(N,1,4)</span> to <span class="mono">(N,4)</span>. And Hough reads angles clockwise-positive with y pointing down, while <span class="mono">getRotationMatrix2D</span> turns counter-clockwise — so <span class="mono">rotate(img, a)</span> shifts measured skew by <span class="mono">−a</span>. The pipeline had this right; the first test did not.</p>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>Constraints worth remembering</h2>
+  <ul class="plain">
+    <li><strong>Resolution ceiling.</strong> Sources are ~103 DPI. Cropping is unaffected; reading is capped, and vital-sign digits are the highest-stakes characters on the page.</li>
+    <li><strong>RTX 5050 is Blackwell (sm_120).</strong> PyTorch must come from the CUDA 12.8 index or it installs cleanly and fails at runtime with "no kernel image is available".</li>
+    <li><strong>8 GB VRAM</strong> is the hard ceiling on any model choice. Nothing has touched the GPU yet — the whole pipeline so far is classical CV on CPU, 196 MB of dependencies.</li>
+    <li><strong>Python 3.12</strong>, not the <span class="mono">py</span> launcher's default of 3.14, where ML wheels are patchy.</li>
+    <li><strong>Everything stays local.</strong> The eventual inputs are patient records, and open weights on-prem sidesteps the cross-border transfer problem entirely.</li>
+    <li><strong>The SiData+ dataset is gated</strong> and access is still pending. It has 500 synthetic pages of one template — content and noise variety, zero layout variety.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Next</h2>
+  <ul class="plain">
+    <li><strong>Draw the nine boxes</strong> in <span class="mono">docs/box-tool.html</span>, sticker region first, then run <span class="mono">apply_boxes.py</span> on the export. The single thing blocking stage 3.</li>
+    <li><strong>Write the three readers</strong> and the crop step, giving a working end-to-end path from page to two integers.</li>
+    <li><strong>Build a real-scan eval set.</strong> Every number on this page is synthetic. This is the highest-value unmeasured thing in the project.</li>
+    <li><strong>Extend to a fifth form</strong> as a genuine test of whether adding one really is just a config file.</li>
+  </ul>
+</section>
+
+<footer>
+  ai-htr · C:\Users\USER\Projects\ai-htr · 5311 lines of Python · 123 tests passing<br>
+  Last updated 20 August 2026 · all measurements synthetic unless stated otherwise
+</footer>
+
+</div>

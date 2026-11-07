@@ -1,0 +1,395 @@
+<title>ความดันจากบัตร OPD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:     #F4F5F7;
+    --surface:   #FFFFFF;
+    --surface-2: #E9EAEF;
+    --ink:       #16171C;
+    --ink-soft:  #3C3E48;
+    --muted:     #6B6D79;
+    --rule:      #D3D5DE;
+    --rule-soft: #E4E5EC;
+    --accent:    #3A4E9C;
+    --accent-2:  #6B7CC4;
+    --crit:      #AC3627;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #0E0F14;
+      --surface:   #171922;
+      --surface-2: #20232E;
+      --ink:       #E7E8EE;
+      --ink-soft:  #BABCC8;
+      --muted:     #8B8D9A;
+      --rule:      #2E313E;
+      --rule-soft: #242733;
+      --accent:    #8E9BE2;
+      --accent-2:  #6B7CC4;
+      --crit:      #E68273;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:     #0E0F14;
+    --surface:   #171922;
+    --surface-2: #20232E;
+    --ink:       #E7E8EE;
+    --ink-soft:  #BABCC8;
+    --muted:     #8B8D9A;
+    --rule:      #2E313E;
+    --rule-soft: #242733;
+    --accent:    #8E9BE2;
+    --accent-2:  #6B7CC4;
+    --crit:      #E68273;
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.8;
+    margin: 0;
+    padding: 3rem 1.15rem 5rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 47rem; margin: 0 auto; }
+
+  a { color: var(--accent); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  h1 {
+    font-weight: 600; font-size: clamp(1.75rem, 4.6vw, 2.4rem);
+    line-height: 1.45; letter-spacing: -0.005em;
+    margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .sub {
+    color: var(--ink-soft); font-size: 1.02rem;
+    margin: 0 0 1.4rem; line-height: 1.75;
+  }
+
+  h2 {
+    font-weight: 600; font-size: 1.28rem; line-height: 1.55;
+    margin: 3.2rem 0 0.5rem; padding-top: 1.1rem;
+    border-top: 2px solid var(--rule);
+  }
+  h3 { font-weight: 600; font-size: 1.03rem; margin: 1.8rem 0 0.4rem; }
+  p  { margin: 0 0 1rem; }
+
+  /* provenance chip — the habit lifted from the reference repo */
+  .stamp {
+    display: inline-block;
+    font-family: "IBM Plex Mono", "IBM Plex Sans Thai", monospace;
+    font-size: 0.7rem; letter-spacing: 0.02em;
+    color: var(--accent); background: var(--surface-2);
+    border: 1px solid var(--rule); border-radius: 2px;
+    padding: 0.12em 0.5em; vertical-align: 0.15em;
+    white-space: nowrap;
+  }
+  h2 .stamp { margin-inline-start: 0.4rem; }
+
+  code, .mono {
+    font-family: "IBM Plex Mono", "IBM Plex Sans Thai", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  code {
+    font-size: 0.87em; background: var(--surface-2);
+    padding: 0.12em 0.38em; border-radius: 3px; color: var(--ink-soft);
+  }
+  pre {
+    background: var(--surface); border: 1px solid var(--rule-soft);
+    border-radius: 4px; padding: 0.9rem 1rem; overflow-x: auto;
+    margin: 0 0 1rem; line-height: 1.65;
+  }
+  pre code { background: none; padding: 0; font-size: 0.83rem; color: var(--ink); }
+
+  .scroll { overflow-x: auto; margin: 0 0 1.2rem; }
+  table {
+    border-collapse: collapse; width: 100%; min-width: 26rem;
+    font-size: 0.93rem; font-variant-numeric: tabular-nums;
+  }
+  th, td {
+    text-align: start; padding: 0.5rem 0.9rem 0.5rem 0;
+    border-bottom: 1px solid var(--rule-soft); vertical-align: baseline;
+  }
+  th {
+    font-weight: 600; font-size: 0.83rem; color: var(--muted);
+    border-bottom: 1px solid var(--rule);
+  }
+  td.n, th.n { text-align: end; padding-inline-end: 1rem; font-family: "IBM Plex Mono", monospace; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  ul { margin: 0 0 1rem; padding-inline-start: 1.3rem; }
+  li { margin-bottom: 0.4rem; }
+  li::marker { color: var(--accent-2); }
+
+  .box {
+    background: var(--surface); border: 1px solid var(--rule-soft);
+    border-inline-start: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0; padding: 1rem 1.2rem; margin: 0 0 1.2rem;
+  }
+  .box.bad { border-inline-start-color: var(--crit); }
+  .box > :last-child { margin-bottom: 0; }
+  .box h3 { margin-top: 0; }
+
+  .ask {
+    display: grid; grid-template-columns: 1.9rem 1fr; gap: 0.9rem;
+    background: var(--surface); border: 1px solid var(--rule-soft);
+    border-radius: 4px; padding: 0.9rem 1.1rem; margin-bottom: 0.7rem;
+  }
+  .ask-n {
+    font-family: "IBM Plex Mono", monospace; font-weight: 600;
+    font-size: 1.15rem; color: var(--accent); line-height: 1.6;
+  }
+  .ask b { display: block; margin-bottom: 0.15rem; }
+  .ask p { margin: 0; font-size: 0.94rem; color: var(--ink-soft); }
+
+  .quiet { color: var(--muted); font-size: 0.9rem; }
+
+  footer {
+    margin-top: 3.5rem; padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    color: var(--muted); font-size: 0.86rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <h1>ai-htr — ดึงค่าความดันจากบัตร OPD</h1>
+
+  <p class="sub">
+    สแกนบัตรผู้ป่วยนอก → หาช่องความดัน → crop ออกมา → อ่านเป็นตัวเลข<br>
+    รันบนเครื่องตัวเองล้วน ๆ ไม่ต่อเน็ต ไม่ใช้ GPU และ<b>ไม่มีโมเดล ML สักตัว</b>
+    เพราะข้อมูลที่จะเข้าจริงคือเวชระเบียนผู้ป่วย
+  </p>
+
+  <p>
+    สรุปสั้น ๆ: <b>ส่วน crop ทำงานได้แล้วและวัดผลแล้ว ✅</b> ส่วน
+    <b>อ่านลายมือยังใช้ไม่ได้ ❌</b> — และตัวที่ติดจริง ๆ คือ<b>กระดาษ ไม่ใช่โค้ด</b>
+  </p>
+
+  <h2>สถานะแต่ละ stage</h2>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th class="n">#</th><th>ขั้นตอน</th><th>สถานะ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="n">0</td><td>normalize — ดัดภาพเอียง ลด noise</td><td>✅ วัดแล้ว</td></tr>
+        <tr><td class="n">1</td><td>ระบุว่าเป็นฟอร์มอะไร</td><td>✅ วัดแล้ว</td></tr>
+        <tr><td class="n">2</td><td>register — warp เข้าพิกัดมาตรฐาน</td><td>✅ วัดแล้ว</td></tr>
+        <tr><td class="n">3</td><td>crop + ขยายกล่องตามหมึก</td><td>⚠️ เจอช่องโหว่</td></tr>
+        <tr><td class="n">4</td><td><b>อ่านลายมือ</b></td><td>❌ ยังใช้ไม่ได้</td></tr>
+        <tr><td class="n">5</td><td>ตรวจความสมเหตุสมผลทางคลินิก</td><td>⚠️ เจอช่องโหว่</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="quiet">เทสต์ผ่าน 123 ตัว · ฟอร์มที่ตั้งค่าแล้ว 4 แบบ · ไม่ต้องลง torch ไม่ต้องโหลดโมเดล</p>
+
+  <h2>ตัวเลข <span class="stamp">วัดจริง 26 ส.ค. 2026 · CPU อย่างเดียว</span></h2>
+
+  <p>
+    มีสแกนจริงฟอร์มละใบเดียว ถ้าเอาหน้านั้นไปเทียบกับ template ที่สร้างจากหน้าเดียวกัน
+    ก็คือวัดอะไรไม่ได้เลย เลยใช้วิธี <b>บิดภาพด้วย homography ที่เรากำหนดเอง</b>
+    แล้วให้ pipeline กู้กลับ — เฉลยเลยแม่นเป๊ะเพราะเราเป็นคนบิดเอง
+  </p>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>ระดับความเสียหายของภาพ</th><th class="n">coverage เฉลี่ย</th><th class="n">ต่ำสุด</th><th class="n">ระบุฟอร์มถูก</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>clean</td><td class="n">0.996</td><td class="n">0.973</td><td class="n">32 / 32</td></tr>
+        <tr><td>เบา</td><td class="n">0.996</td><td class="n">0.973</td><td class="n">32 / 32</td></tr>
+        <tr><td>ปานกลาง</td><td class="n">0.996</td><td class="n">0.973</td><td class="n">32 / 32</td></tr>
+        <tr><td>หนัก</td><td class="n">0.996</td><td class="n">0.973</td><td class="n">27 / 32</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ul>
+    <li>วัดด้วย <b>coverage ไม่ใช่ IoU</b> — crop ที่ตัดตัวเลขขาดถือว่าพังหมด ต่อให้ overlap สวยแค่ไหน ส่วนขาวเกินมาไม่เสียหายอะไร ตัดเลขหน้าขาดทีเดียว <code>143</code> กลายเป็น <code>43</code></li>
+    <li>ความคลาดเคลื่อนของ registration <b>ต่ำกว่า 1 pixel</b> (เฉลี่ย 0.35 px)</li>
+    <li>ที่พลาด 5 เคสตอนภาพเสียหนัก <b>เป็นการ “ปฏิเสธ” ทั้งหมด ไม่มีเคสไหนทายผิดฟอร์ม</b> — คือมันบอกว่า “ไม่รู้จักฟอร์มนี้” แทนที่จะเดามั่ว ตรงนี้ตั้งใจออกแบบให้พลาดไปทางนี้</li>
+  </ul>
+
+  <h2>ส่วนที่ยังใช้ไม่ได้ — ตัวอ่าน</h2>
+
+  <p>
+    ตัวอ่านตอนนี้เทียบลายมือกับ template 198 แบบที่ render จาก vector font
+    ของ OpenCV ไม่มีพารามิเตอร์ที่เรียนรู้มาเลยสักตัว ผลบนช่องความดันจริงใบเดียวที่มี:
+  </p>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>เขียนจริง</th><th>อ่านได้</th><th class="n">คะแนน match</th><th>มันคิดว่าตัวเองมั่นใจไหม</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">1</td><td class="mono">1</td><td class="n">0.577</td><td>มั่นใจ ✅</td></tr>
+        <tr><td class="mono">4</td><td class="mono">1</td><td class="n">0.544</td><td>ไม่มั่นใจ</td></tr>
+        <tr><td class="mono">3</td><td class="mono">1</td><td class="n">0.647</td><td><b>มั่นใจ ⚠️</b></td></tr>
+        <tr><td class="mono">/</td><td class="mono">/</td><td class="n">0.725</td><td>มั่นใจ ✅</td></tr>
+        <tr><td class="mono">9</td><td class="mono">1</td><td class="n">0.562</td><td><b>มั่นใจ ⚠️</b></td></tr>
+        <tr><td class="mono">0</td><td class="mono">0</td><td class="n">0.743</td><td>มั่นใจ ✅</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    <code>143/90</code> ออกมาเป็น <code>111/10</code> — เลข <code>4</code> <code>3</code>
+    <code>9</code> ยุบไปเป็น <code>1</code> หมด และ <b>2 ใน 3 ตัวที่ผิดมันบอกว่ามั่นใจ</b>
+    คะแนนทุกตัวกองอยู่แถว 0.55–0.75 เหมือนกันหมดไม่ว่าถูกหรือผิด แปลว่าค่าความมั่นใจนี้
+    <b>ไม่ได้แค่ไม่แม่น แต่ใช้บอกอะไรไม่ได้เลย</b>
+  </p>
+
+  <div class="box">
+    <h3>ข่าวดีที่ต้องแยกให้ชัด 📖</h3>
+    <p>
+      <b>ขั้นตอนตัดตัวอักษร (segmentation) ถูกต้องอยู่แล้ว</b> — บนลายมือจริงที่ภาพไม่ค่อยดี
+      มันแยกได้ครบทั้ง 6 ตัวและตำแหน่งถูกหมด ที่พังคือขั้นตอนสุดท้ายคือการ<b>จำแนกตัวอักษร</b>
+      อย่างเดียว ซึ่งแคบลงมาเยอะแล้ว
+    </p>
+  </div>
+
+  <h2>เจออะไรใหม่อาทิตย์นี้ <span class="stamp">ชุดทดสอบจากหมึกจริง</span></h2>
+
+  <p>
+    ทำตัวสร้างชุดทดสอบใหม่ ที่<b>ไม่ render ตัวเลขด้วยฟอนต์</b> — เพราะ template ของตัวอ่าน
+    ก็มาจากฟอนต์ชุดเดียวกัน ถ้าวัดแบบนั้นคือให้มันตรวจข้อสอบตัวเอง แทนที่จะทำแบบนั้น
+    เลย<b>เก็บลายมือจริงที่มีอยู่บนบัตรมาประกอบเป็นเลขใหม่</b>
+  </p>
+
+  <p>
+    พอไล่ดูดี ๆ พบว่าในสติกเกอร์คัดกรองมีลายมือมากกว่าที่คิด — ทั้ง <code>T 36.9</code>,
+    <code>P 64</code>, <code>R 20</code>, <code>O2 Sat 96</code> รวมกับ <code>BP 143/90</code>
+    ได้หมึกจริง <b>7 ตัวเลขจาก 10 ตัว</b> เอามาประกอบเป็นค่าความดันอะไรก็ได้ พร้อมเลื่อนตำแหน่ง
+    บิดหน้ากระดาษ และย้ายสติกเกอร์ โดยรู้เฉลยเป๊ะ
+  </p>
+
+  <p class="quiet">เลข 5, 7, 8 ไม่มีอยู่บนหน้านี้เลย จึงยังไม่ได้ทดสอบ</p>
+
+  <h3>1 · กล่อง crop ขยายลงล่างไม่เป็น</h3>
+
+  <p>เอา 12 หน้าเดิมมาแยกตามทิศที่ลายมือขยับ:</p>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>ลายมือขยับไปทาง</th><th class="n">จำนวนหน้า</th><th class="n">coverage เฉลี่ย</th><th class="n">แย่สุด</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>ขึ้นบน หรือเท่าเดิม</td><td class="n">9</td><td class="n">99.0%</td><td class="n">95.2%</td></tr>
+        <tr><td><b>ลงล่าง</b></td><td class="n">3</td><td class="n">69.8%</td><td class="n">35.4%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    เลื่อนออกข้าง ๆ ตั้ง 80 px ยังรับได้สบาย แต่<b>เลื่อนลงล่างแค่ 39 px หายไป 2 ใน 3 ของค่า</b>
+    เคสที่ต่ำกว่า 95% ทุกเคสคือเคสที่เขียนต่ำลงมา ไม่มีข้อยกเว้น
+  </p>
+
+  <h3>2 · ช่องที่อ่านไม่เจอ ไม่ถูกนับว่าเป็นความขัดแย้ง</h3>
+
+  <div class="box bad">
+    <p>
+      หน้าที่แย่ที่สุดข้างบน ระบบ<b>ไม่ได้รายงานค่าผิด</b> — มันรายงานว่า
+      <b>ช่องนี้ว่าง</b> (<code>field_empty</code>) ทั้งที่หน้านั้นมีความดัน <code>160/102</code> เขียนอยู่
+    </p>
+    <p style="margin-top:0.6rem">
+      จุดที่ควรกันไว้คือ บัตรกับสติกเกอร์บันทึกการมาครั้งเดียวกันสองที่ เลย cross-check กันเองได้
+      โดยไม่ต้องมีเฉลย และรอบนี้<b>สติกเกอร์อ่านถูก</b>ด้วยซ้ำ แต่โค้ดมันเทียบเฉพาะค่าที่<b>มีอยู่</b>
+      พอฝั่งบัตรไม่ส่งค่ามาเลย ก็เหลือค่าเดียว แล้วค่าเดียวถูกตีความว่า “ไม่มีอะไรให้เทียบ” →
+      ผ่านฉลุย
+    </p>
+    <p style="margin-top:0.6rem">
+      <b>ค่าผิดจะโดนจับ แต่ค่าที่หายไปไม่โดน</b> — ตอนนี้ “ไม่มีค่า” ถูกนับว่า “ไม่มีข้อมูล”
+      แทนที่จะนับว่าขัดแย้งกับอีกฝั่งที่มีค่า
+    </p>
+  </div>
+
+  <p>
+    ทั้งสองอันแก้ไม่ยากและไม่ลึก ประเด็นคือ<b>ของเดิมที่วัดผ่านมาแล้วไม่เคยเจอสองอันนี้เลย
+    แต่ชุดทดสอบจากหมึกจริงเจอภายในวันเดียว</b>
+  </p>
+
+  <h2>เพดานความละเอียด — อ่านก่อนเชื่อตัวเลขความแม่นใด ๆ</h2>
+
+  <p>
+    หน้าต้นฉบับทุกใบตอนนี้ผ่านการบีบอัดจากแอปแชตมา เหลือราว <b>103 dpi</b>
+    มาตรฐานสแกนเอกสารคือ 300 dpi และงาน OCR ปกติอยากได้อย่างน้อย 200
+  </p>
+
+  <p>
+    ที่ 103 dpi ลายมือ <code>143/90</code> กว้างราว 60×25 px และตัวอักษรไทย 8 pt สูงราว 11 px
+    คือ<b>อ่านไม่ออกอยู่แล้วโดยธรรมชาติ</b> — เรื่องนี้<b>ไม่กระทบส่วน crop</b>
+    เพราะมี feature ให้จับเหลือเฟือ แต่<b>เป็นเพดานของตัวอ่านโดยตรง</b>
+    ข้างในระบบทำงานที่ 300 dpi อยู่แล้ว ได้สแกนดี ๆ มาเมื่อไหร่ไม่ต้องแก้ config อะไรเลย
+  </p>
+
+  <h2>สิ่งที่ขอ — ติดกระดาษ ไม่ได้ติดโค้ด</h2>
+
+  <p>
+    ทั้งคลังข้อมูลมีช่องความดันที่กรอกจริง <b>3 ช่อง</b> และทั้งสามช่องอยู่บนบัตรใบเดียวกัน
+    ลายมือคนเดียวกัน บันทึกค่าครั้งเดียวกัน — ไม่ว่าจะเป็นตัวอ่านแบบไหน
+    เทรนเองหรือซื้อมา ก็ประเมินอย่างซื่อสัตย์ไม่ได้ด้วยข้อมูลเท่านี้
+    การรายงานความแม่นจากตัวอย่างเดียวไม่มีความหมาย โปรเจกต์นี้จึงตั้งใจไม่รายงาน
+  </p>
+
+  <div class="ask">
+    <span class="ask-n">1</span>
+    <div>
+      <b>บัตร OPD ที่กรอกแล้ว 20–30 ใบ</b>
+      <p>ตัวติดหลัก ต้องการลายมือหลาย ๆ คนพอที่จะวัดตัวอ่านได้จริง และดูว่าความผิดพลาดเกาะกลุ่มตามคนเขียน ตามปากกา หรือตามช่อง — ลบข้อมูลระบุตัวตนออกให้หมดได้เลย ใช้แค่บล็อก vital signs</p>
+    </div>
+  </div>
+
+  <div class="ask">
+    <span class="ask-n">2</span>
+    <div>
+      <b>บัตร OPD เปล่า ๆ 1 ใบ</b>
+      <p>แก้ปัญหาสามอย่างพร้อมกัน ตอนนี้ template คือบัตรที่มีคนกรอกแล้วและมีสติกเกอร์แปะอยู่ ระบบเลยต้องคอยหลบเนื้อหาที่ไม่ใช่ตัวฟอร์ม ถ้ามีใบเปล่าจะเคลียร์ทั้งเรื่อง template matching, การ register และค่าคงที่ใน refine ทีเดียว</p>
+    </div>
+  </div>
+
+  <div class="ask">
+    <span class="ask-n">3</span>
+    <div>
+      <b>สแกนที่ 300 dpi</b>
+      <p>ใช้เครื่องสแกนแทนการถ่ายรูปส่งผ่านแอปแชต ไม่มีค่าใช้จ่ายเพิ่ม แต่ได้ pixel ต่อตัวเลขเพิ่มราว 3 เท่า</p>
+    </div>
+  </div>
+
+  <h2>ข้อจำกัดที่ต้องบอกตรง ๆ</h2>
+
+  <ul>
+    <li><b>ตัวเลขทุกตัวในรายงานนี้มาจากข้อมูลสังเคราะห์</b> ยังไม่เคยทดสอบกับสแกนจริงใบที่สองของฟอร์มไหนเลย</li>
+    <li><b>ลายมือคนเดียว</b> — หมึกที่เก็บมาทั้งหมดมาจากคนคนเดียวบนหน้าเดียว บอกอะไรเกี่ยวกับความต่างระหว่างคนเขียนไม่ได้</li>
+    <li><b>เลข 5, 7, 8 ยังไม่ได้ทดสอบ</b> เพราะไม่มีบนหน้าต้นฉบับ</li>
+    <li><b>ทำเสร็จแค่ field แบบเดียว</b> คือค่าที่เขียนบนเส้นบรรทัด ส่วน checkbox, วงกลม Y/N และตารางประกาศไว้แล้วแต่ยังไม่ได้วัด</li>
+    <li><b>ระดับความเสียหายของภาพในชุดทดสอบใหม่ยังเทียบกันตรง ๆ ไม่ได้</b> เพราะระยะเลื่อนสุ่มอิสระ ไม่ได้ตรึงไว้ — แต่ผลการแยก “ขึ้นบน / ลงล่าง” ข้างบนไม่ได้รับผลกระทบจากเรื่องนี้</li>
+  </ul>
+
+  <footer>
+    รันบนเครื่องเดียวแบบออฟไลน์ ไม่มีข้อมูลผู้ป่วยออกจากเครื่อง
+    และไม่มีภาพสแกนหรือข้อมูลระบุตัวตนใด ๆ ปรากฏในรายงานนี้ · 26 ส.ค. 2026
+  </footer>
+
+</div>

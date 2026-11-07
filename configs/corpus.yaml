@@ -1,0 +1,94 @@
+# Source corpus. Identified by reading each page 2026-08-20.
+# Originals: C:\Users\USER\OneDrive\Pictures\Record Data Set  (LINE export)
+#
+# WARNING: all 12 are LINE-compressed to 1200 px tall = ~103 DPI at A4.
+# Adequate for registration/cropping; marginal for reading handwriting.
+# See CLAUDE.md "Resolution ceiling".
+
+pages:
+  - file: base-opd-card-v1_001.jpg      # 1065x1537 - flatbed scan, best quality
+    origin: S__14688274
+    form: base-opd-card-v1
+    print_run: "851"
+    v1: true                            # BP patterns A (top block) + B (triage sticker)
+    notes: "Only page with filled BP: 143/90 top block, 143/90 triage. Two binder blobs left edge."
+
+  - file: neuro-v1_001.jpg
+    origin: S__14688262
+    form: neuro-v1
+    print_run: "851"
+    v1: true                            # BP pattern C (Home SBP / DBP)
+    notes: "Photographed at an angle on a desk; visible skew + orange background bleed."
+
+  - file: nutrition-0190-v1_001.jpg
+    origin: S__14688266
+    form: nutrition-0190-v1
+    print_run: "3591"
+    v1: true                            # BP pattern A (Vital Signs line)
+    notes: "Flattest of the overlay forms. Best template candidate after the base card."
+
+  - file: ms-form-v2_4_p1_001.jpg
+    origin: S__14688267
+    form: ms-form-v2_4
+    print_run: null                     # no hospital print code; self-labelled bottom-LEFT
+    v1: true                            # BP pattern B (Screening box)
+    notes: "Standalone insert sheet, no hospital header. Form ID must be feature-based."
+
+  - file: ms-form-v2_4_p2_001.jpg
+    origin: S__14688271
+    form: ms-form-v2_4-p2
+    print_run: null
+    v1: false
+    notes: "Page 2. Heavy diagram content (eye circles, stick figure, body map)."
+
+  - file: rheum-ra-v1_001.jpg
+    origin: S__14688263
+    form: rheum-ra-v1
+    print_run: "851"
+    v1: false
+    notes: "Homunculus joint diagram. Angled photo."
+
+  - file: nephro-ht-v1_001.jpg
+    origin: S__14688264
+    form: nephro-ht-v1
+    print_run: "851"
+    v1: false
+    notes: "Yes/No circle-one table + 5x4 lab grid."
+
+  - file: investigation-table-v1_001.jpg
+    origin: S__14688265
+    form: investigation-table-v1
+    print_run: null
+    v1: false
+    notes: "Page 2 continuation, NO header block at all. Pure grid_cell test case."
+
+  - file: geriatric-206-v1_001.jpg
+    origin: S__14688268
+    form: geriatric-206-v1
+    print_run: "3740"
+    v1: false
+
+  - file: id-hiv-v1_001.jpg
+    origin: S__14688269
+    form: id-hiv-v1
+    print_run: "3736"
+    v1: false
+
+  - file: chest-v1_001.jpg
+    origin: S__14688270
+    form: chest-v1
+    print_run: "3591"                   # SAME run as nutrition - see note below
+    v1: false
+    notes: "Has genuinely ticked checkboxes - the only page with real checkbox data."
+
+  - file: diabetes-0104-v1_001.jpg
+    origin: S__14688272
+    form: diabetes-0104-v1
+    print_run: "3227"
+    v1: false
+    notes: "Shares an IDENTICAL smoking-screening sub-block with chest-v1."
+
+# FINDING: print_run is NOT a unique form identifier.
+# nutrition-0190-v1 and chest-v1 both carry 3591/30,000/Mat.10039712 despite
+# completely different layouts. It identifies the paper stock / print batch,
+# not the form. Form identification must therefore be feature-based.

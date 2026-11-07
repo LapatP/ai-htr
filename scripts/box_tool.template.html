@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ai-htr · box drawing tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#EEF1F2; --surface:#FBFCFD; --surface-2:#E6EBEC;
+  --ink:#172126; --ink-2:#5C6C73; --ink-3:#8798A0;
+  --rule:#C7D1D5; --rule-soft:#DBE2E5;
+  --accent:#2E5FA3; --accent-soft:#DCE6F3;
+  --done:#2C7A52; --done-soft:#D6E9DF;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#10161A; --surface:#182126; --surface-2:#1F2A30;
+  --ink:#E2EAED; --ink-2:#93A4AC; --ink-3:#6B7C85;
+  --rule:#2C383E; --rule-soft:#232E34;
+  --accent:#79ACEC; --accent-soft:#1D2E44;
+  --done:#62B98D; --done-soft:#17301F;
+}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:14px;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+header{
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  padding:10px 18px; background:var(--surface);
+  border-bottom:1px solid var(--rule);
+}
+.brand{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-2)}
+.tabs{display:flex; gap:6px; flex-wrap:wrap}
+.tab{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+  padding:5px 11px; border:1px solid var(--rule); background:var(--surface);
+  color:var(--ink-2); cursor:pointer; border-radius:3px;
+}
+.tab:hover{border-color:var(--accent); color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+.tab .cnt{opacity:.7; margin-left:6px}
+.grow{flex:1}
+.total{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-2)}
+.total b{color:var(--ink); font-variant-numeric:tabular-nums}
+
+main{flex:1; display:flex; min-height:0}
+#stage{
+  flex:1; position:relative; min-width:0; background:var(--surface-2);
+  overflow:hidden; cursor:crosshair;
+}
+#stage.panning{cursor:grabbing}
+#cv{position:absolute; inset:0; width:100%; height:100%}
+#loupe{
+  position:absolute; width:168px; height:168px; pointer-events:none;
+  border:1px solid var(--ink); background:var(--surface); display:none; z-index:5;
+  box-shadow:0 4px 14px rgba(0,0,0,.22);
+}
+#hud{
+  position:absolute; left:12px; bottom:12px; z-index:6;
+  font-family:"IBM Plex Mono",monospace; font-size:11px;
+  background:var(--surface); border:1px solid var(--rule);
+  padding:6px 10px; color:var(--ink-2); line-height:1.7;
+}
+#hud b{color:var(--ink); font-variant-numeric:tabular-nums}
+
+aside{
+  width:352px; flex:none; background:var(--surface);
+  border-left:1px solid var(--rule); display:flex; flex-direction:column; min-height:0;
+}
+.sec{padding:13px 16px; border-bottom:1px solid var(--rule-soft)}
+.sec h2{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-3); margin:0 0 10px; font-weight:500;
+}
+#fields{overflow-y:auto; flex:1; min-height:0}
+.fld{
+  padding:10px 16px; border-bottom:1px solid var(--rule-soft);
+  cursor:pointer; border-left:3px solid transparent;
+}
+.fld:hover{background:var(--surface-2)}
+.fld[aria-current="true"]{border-left-color:var(--accent); background:var(--accent-soft)}
+.fld-top{display:flex; align-items:center; gap:8px; margin-bottom:3px}
+.fld-id{font-family:"IBM Plex Mono",monospace; font-size:12.5px; font-weight:600}
+.fld-pat{
+  font-family:"IBM Plex Mono",monospace; font-size:9px; letter-spacing:.1em;
+  border:1px solid var(--rule); padding:1px 5px; border-radius:2px; color:var(--ink-3);
+}
+.fld-ok{margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:10px;
+  color:var(--done); font-weight:600}
+.fld-hint{font-size:12px; color:var(--ink-2); line-height:1.45; margin:0}
+.fld-xy{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--accent);
+  margin-top:5px; font-variant-numeric:tabular-nums;
+}
+.nudge{display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:7px}
+.nudge input{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; width:100%;
+  padding:3px 5px; border:1px solid var(--rule); background:var(--ground);
+  color:var(--ink); border-radius:2px; text-align:center;
+}
+.nudge input:focus{outline:2px solid var(--accent); outline-offset:-1px}
+
+.btns{display:flex; gap:7px; flex-wrap:wrap}
+button{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em;
+  padding:7px 12px; border:1px solid var(--rule); background:var(--surface);
+  color:var(--ink); cursor:pointer; border-radius:3px;
+}
+button:hover{border-color:var(--accent); color:var(--accent)}
+button.pri{background:var(--accent); border-color:var(--accent); color:#fff}
+button.pri:hover{opacity:.88; color:#fff}
+button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+#out{
+  width:100%; height:150px; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+  line-height:1.5; border:1px solid var(--rule); background:var(--ground);
+  color:var(--ink); padding:8px; resize:vertical; white-space:pre;
+}
+.help{font-size:11.5px; color:var(--ink-2); line-height:1.6; margin:0}
+.help kbd{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; border:1px solid var(--rule);
+  border-bottom-width:2px; padding:1px 4px; border-radius:2px; background:var(--ground);
+}
+@media (max-width:900px){ main{flex-direction:column} aside{width:auto; border-left:none;
+  border-top:1px solid var(--rule); max-height:52vh} }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">ai-htr · box tool</span>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <span class="grow"></span>
+  <span class="total"><b id="tdone">0</b> / <b id="ttot">0</b> boxes drawn</span>
+</header>
+
+<main>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <canvas id="loupe" width="168" height="168"></canvas>
+    <div id="hud"></div>
+  </div>
+
+  <aside>
+    <div id="fields"></div>
+
+    <div class="sec">
+      <h2>Output</h2>
+      <textarea id="out" readonly spellcheck="false"></textarea>
+      <div class="btns" style="margin-top:9px">
+        <button class="pri" id="copy">Copy JSON</button>
+        <button id="dl">Download</button>
+        <button id="clr">Clear form</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Controls</h2>
+      <p class="help">
+        Pick a field, then <b>drag</b> a rectangle round its value.<br>
+        <kbd>wheel</kbd> zoom &nbsp; <kbd>space</kbd>+drag or <kbd>right-drag</kbd> pan &nbsp;
+        <kbd>F</kbd> fit &nbsp; <kbd>Esc</kbd> deselect<br>
+        Box edges nudge with the four number inputs. Work is saved in this browser
+        automatically.
+      </p>
+    </div>
+  </aside>
+</main>
+
+<script>/*__DATA__*/</script>
+<script>
+(() => {
+"use strict";
+const CANON = [2480, 3508];        // canonical space the configs refer to
+const SCALE = DATA.scale;          // embedded image is 1/SCALE of canonical
+const KEY = "aihtr.boxes.v1";
+
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const loupe = document.getElementById("loupe"), lctx = loupe.getContext("2d");
+const stage = document.getElementById("stage"), hud = document.getElementById("hud");
+
+const imgs = {};
+let ready = 0;
+const forms = DATA.forms;
+const ids = forms.map(f => f.form_id);
+
+const state = {
+  form: ids[0],
+  field: null,
+  boxes: JSON.parse(localStorage.getItem(KEY) || "{}"),
+  view: { s: 1, x: 0, y: 0 },
+  drag: null, pan: null, space: false, mouse: null,
+};
+
+const cur = () => forms.find(f => f.form_id === state.form);
+const boxesFor = id => (state.boxes[id] ||= {});
+
+/* ---------- geometry: canvas px <-> canonical px ---------- */
+function toImg(cx, cy) {
+  return { x: (cx - state.view.x) / state.view.s, y: (cy - state.view.y) / state.view.s };
+}
+function fit() {
+  const im = imgs[state.form];
+  if (!im) return;
+  const s = Math.min(cv.width / im.width, cv.height / im.height) * 0.94;
+  state.view = { s, x: (cv.width - im.width * s) / 2, y: (cv.height - im.height * s) / 2 };
+}
+
+/* ---------- render ---------- */
+function resize() {
+  const r = stage.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+  cv.width = r.width * d; cv.height = r.height * d;
+  cv.style.width = r.width + "px"; cv.style.height = r.height + "px";
+}
+function css(v) { return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+
+function draw() {
+  const im = imgs[state.form];
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = css("--surface-2"); ctx.fillRect(0, 0, cv.width, cv.height);
+  if (!im) return;
+
+  const { s, x, y } = state.view;
+  ctx.setTransform(s, 0, 0, s, x, y);
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(im, 0, 0);
+
+  const accent = css("--accent"), done = css("--done");
+  const b = boxesFor(state.form);
+
+  for (const f of cur().fields) {
+    const r = b[f.id]; if (!r) continue;
+    const sel = f.id === state.field;
+    const [x1, y1, x2, y2] = r.map(v => v / SCALE);
+    ctx.lineWidth = (sel ? 2.4 : 1.6) / s;
+    ctx.strokeStyle = sel ? accent : done;
+    ctx.fillStyle = sel ? accent + "22" : done + "18";
+    ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+    ctx.font = `${11 / s}px "IBM Plex Mono", monospace`;
+    ctx.fillStyle = sel ? accent : done;
+    ctx.fillText(f.id, x1, y1 - 4 / s);
+  }
+
+  if (state.drag) {
+    const d = state.drag;
+    ctx.lineWidth = 1.6 / s; ctx.strokeStyle = accent;
+    ctx.setLineDash([5 / s, 4 / s]);
+    ctx.strokeRect(Math.min(d.x0, d.x1), Math.min(d.y0, d.y1),
+                   Math.abs(d.x1 - d.x0), Math.abs(d.y1 - d.y0));
+    ctx.setLineDash([]);
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function drawLoupe() {
+  const im = imgs[state.form], m = state.mouse;
+  if (!im || !m || state.pan) { loupe.style.display = "none"; return; }
+  const p = toImg(m.cx, m.cy);
+  const Z = 5, half = 168 / (2 * Z);
+  lctx.setTransform(1, 0, 0, 1, 0, 0);
+  lctx.fillStyle = css("--surface"); lctx.fillRect(0, 0, 168, 168);
+  lctx.imageSmoothingEnabled = false;
+  lctx.drawImage(im, p.x - half, p.y - half, half * 2, half * 2, 0, 0, 168, 168);
+  lctx.strokeStyle = css("--accent"); lctx.lineWidth = 1;
+  lctx.beginPath();
+  lctx.moveTo(84, 0); lctx.lineTo(84, 168); lctx.moveTo(0, 84); lctx.lineTo(168, 84);
+  lctx.stroke();
+  loupe.style.display = "block";
+  const r = stage.getBoundingClientRect();
+  const right = m.cx / (window.devicePixelRatio || 1) > r.width - 200;
+  loupe.style.left = (right ? 12 : r.width - 180) + "px";
+  loupe.style.top = "12px";
+}
+
+function drawHud() {
+  const m = state.mouse;
+  let s = `zoom <b>${(state.view.s * SCALE * 100).toFixed(0)}%</b>`;
+  if (m) {
+    const p = toImg(m.cx, m.cy);
+    s += ` &nbsp; canonical <b>${Math.round(p.x * SCALE)}, ${Math.round(p.y * SCALE)}</b>`;
+  }
+  if (state.drag) {
+    const d = state.drag;
+    s += ` &nbsp; size <b>${Math.round(Math.abs(d.x1 - d.x0) * SCALE)} × ` +
+         `${Math.round(Math.abs(d.y1 - d.y0) * SCALE)}</b>`;
+  }
+  hud.innerHTML = s;
+}
+const paint = () => { draw(); drawLoupe(); drawHud(); };
+
+/* ---------- sidebar ---------- */
+function renderTabs() {
+  const t = document.getElementById("tabs");
+  t.innerHTML = "";
+  for (const f of forms) {
+    const n = Object.keys(boxesFor(f.form_id)).length;
+    const b = document.createElement("button");
+    b.className = "tab"; b.role = "tab";
+    b.setAttribute("aria-selected", f.form_id === state.form);
+    b.innerHTML = `${f.form_id}<span class="cnt">${n}/${f.fields.length}</span>`;
+    b.onclick = () => { state.form = f.form_id; state.field = null; fit(); renderAll(); };
+    t.appendChild(b);
+  }
+  let d = 0, tot = 0;
+  for (const f of forms) { d += Object.keys(boxesFor(f.form_id)).length; tot += f.fields.length; }
+  document.getElementById("tdone").textContent = d;
+  document.getElementById("ttot").textContent = tot;
+}
+
+function renderFields() {
+  const host = document.getElementById("fields");
+  host.innerHTML = "";
+  const b = boxesFor(state.form);
+
+  const h = document.createElement("div");
+  h.className = "sec"; h.style.borderBottom = "1px solid var(--rule)";
+  h.innerHTML = `<h2>Fields — ${state.form}</h2>`;
+  host.appendChild(h);
+
+  for (const f of cur().fields) {
+    const el = document.createElement("div");
+    el.className = "fld";
+    el.setAttribute("aria-current", f.id === state.field);
+    const r = b[f.id];
+    el.innerHTML =
+      `<div class="fld-top">
+         <span class="fld-id">${f.id}</span>
+         ${f.pattern ? `<span class="fld-pat">${f.pattern}</span>` : ""}
+         ${r ? '<span class="fld-ok">SET</span>' : ""}
+       </div>
+       <p class="fld-hint">${f.hint}</p>` +
+      (r ? `<div class="fld-xy">[${r.join(", ")}]</div>` : "");
+
+    el.onclick = e => {
+      if (e.target.tagName === "INPUT") return;
+      state.field = f.id; renderFields(); paint();
+    };
+
+    if (r && f.id === state.field) {
+      const n = document.createElement("div");
+      n.className = "nudge";
+      ["x1", "y1", "x2", "y2"].forEach((lbl, i) => {
+        const inp = document.createElement("input");
+        inp.type = "number"; inp.value = r[i]; inp.title = lbl;
+        inp.onchange = () => {
+          const v = parseInt(inp.value, 10);
+          if (!Number.isNaN(v)) { r[i] = v; save(); renderFields(); paint(); }
+        };
+        n.appendChild(inp);
+      });
+      el.appendChild(n);
+    }
+    host.appendChild(el);
+  }
+}
+
+function renderOut() {
+  document.getElementById("out").value = JSON.stringify(state.boxes, null, 2);
+}
+function renderAll() { renderTabs(); renderFields(); renderOut(); paint(); }
+function save() { localStorage.setItem(KEY, JSON.stringify(state.boxes)); renderOut(); renderTabs(); }
+
+/* ---------- pointer ---------- */
+function local(e) {
+  const r = stage.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+  return { cx: (e.clientX - r.left) * d, cy: (e.clientY - r.top) * d };
+}
+stage.addEventListener("contextmenu", e => e.preventDefault());
+
+stage.addEventListener("pointerdown", e => {
+  const m = local(e);
+  if (e.button === 2 || e.button === 1 || state.space) {
+    state.pan = { cx: m.cx, cy: m.cy, vx: state.view.x, vy: state.view.y };
+    stage.classList.add("panning"); stage.setPointerCapture(e.pointerId);
+    return;
+  }
+  if (e.button !== 0 || !state.field) return;
+  const p = toImg(m.cx, m.cy);
+  state.drag = { x0: p.x, y0: p.y, x1: p.x, y1: p.y };
+  stage.setPointerCapture(e.pointerId);
+});
+
+stage.addEventListener("pointermove", e => {
+  const m = local(e); state.mouse = m;
+  if (state.pan) {
+    state.view.x = state.pan.vx + (m.cx - state.pan.cx);
+    state.view.y = state.pan.vy + (m.cy - state.pan.cy);
+  } else if (state.drag) {
+    const p = toImg(m.cx, m.cy); state.drag.x1 = p.x; state.drag.y1 = p.y;
+  }
+  paint();
+});
+
+stage.addEventListener("pointerup", e => {
+  if (state.pan) { state.pan = null; stage.classList.remove("panning"); paint(); return; }
+  const d = state.drag; state.drag = null;
+  if (!d || !state.field) return;
+  const w = Math.abs(d.x1 - d.x0), h = Math.abs(d.y1 - d.y0);
+  if (w * SCALE < 8 || h * SCALE < 8) { paint(); return; }   // ignore stray clicks
+  boxesFor(state.form)[state.field] = [
+    Math.round(Math.min(d.x0, d.x1) * SCALE), Math.round(Math.min(d.y0, d.y1) * SCALE),
+    Math.round(Math.max(d.x0, d.x1) * SCALE), Math.round(Math.max(d.y0, d.y1) * SCALE),
+  ];
+  save(); renderFields(); paint();
+});
+
+stage.addEventListener("pointerleave", () => { state.mouse = null; paint(); });
+
+stage.addEventListener("wheel", e => {
+  e.preventDefault();
+  const m = local(e), p = toImg(m.cx, m.cy);
+  const k = Math.exp(-e.deltaY * 0.0016);
+  state.view.s = Math.min(24, Math.max(0.05, state.view.s * k));
+  state.view.x = m.cx - p.x * state.view.s;
+  state.view.y = m.cy - p.y * state.view.s;
+  paint();
+}, { passive: false });
+
+addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.code === "Space") { state.space = true; e.preventDefault(); }
+  if (e.key === "f" || e.key === "F") { fit(); paint(); }
+  if (e.key === "Escape") { state.field = null; renderFields(); paint(); }
+});
+addEventListener("keyup", e => { if (e.code === "Space") state.space = false; });
+addEventListener("resize", () => { resize(); fit(); paint(); });
+
+/* ---------- buttons ---------- */
+document.getElementById("copy").onclick = async () => {
+  const btn = document.getElementById("copy");
+  try { await navigator.clipboard.writeText(document.getElementById("out").value); }
+  catch { const t = document.getElementById("out"); t.select(); document.execCommand("copy"); }
+  btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy JSON", 1300);
+};
+document.getElementById("dl").onclick = () => {
+  const blob = new Blob([document.getElementById("out").value], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "boxes.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+document.getElementById("clr").onclick = () => {
+  if (!confirm(`Clear every box drawn on ${state.form}?`)) return;
+  state.boxes[state.form] = {}; save(); renderFields(); paint();
+};
+
+/* ---------- boot ---------- */
+resize();
+for (const f of forms) {
+  const im = new Image();
+  im.onload = () => { if (++ready === forms.length) { fit(); renderAll(); } };
+  im.src = f.png;
+  imgs[f.form_id] = im;
+}
+renderAll();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+form_id: neuro-v1
+name: "Neuro clinic / NeuroMed overlay"
+extends: base-opd-card-v1
+template: data/templates/neuro-v1.png
+page_size_px: [2480, 3508]
+
+fields:
+  # Pattern C: two SEPARATELY LABELLED blanks, no slash. Label order is the
+  # only thing distinguishing systolic from diastolic.
+  - id: risk.home_sbp
+    label: "Home SBP"
+    type: line_value
+    bp_pattern: C
+    reader: bp_labelled_split
+    unit: mmHg
+    bbox: [478, 2752, 708, 2810]
+    context_bbox: [352, 2726, 834, 2836]
+  - id: risk.home_dbp
+    label: "Home DBP"
+    type: line_value
+    bp_pattern: C
+    reader: bp_labelled_split
+    unit: mmHg
+    bbox: [800, 2752, 1068, 2810]
+    context_bbox: [653, 2726, 1215, 2836]

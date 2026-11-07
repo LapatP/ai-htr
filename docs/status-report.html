@@ -1,0 +1,692 @@
+<title>Hospital OPD BP Extraction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:      #EDEFEC;
+    --surface:    #F7F8F6;
+    --surface-2:  #E3E7E2;
+    --ink:        #141A18;
+    --ink-soft:   #414B46;
+    --muted:      #6A746E;
+    --rule:       #C4CCC5;
+    --rule-soft:  #D6DCD6;
+    --accent:     #0E5A5E;
+    --accent-dim: #3C8286;
+    --ok:         #2E6B4E;
+    --warn:       #8A6512;
+    --crit:       #9E3B2C;
+    --ok-bg:      #DCE8DF;
+    --warn-bg:    #EFE5CB;
+    --crit-bg:    #F0DCD7;
+
+    --measure: 68ch;
+    --s1: 0.35rem;  --s2: 0.7rem;  --s3: 1.1rem;
+    --s4: 1.8rem;   --s5: 2.8rem;  --s6: 4.4rem;
+
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0F1412;
+      --surface:    #161C19;
+      --surface-2:  #1E2622;
+      --ink:        #E4E9E5;
+      --ink-soft:   #B6C0BA;
+      --muted:      #8C968F;
+      --rule:       #303B35;
+      --rule-soft:  #262F2A;
+      --accent:     #58B7B3;
+      --accent-dim: #3E8B88;
+      --ok:         #6FBE92;
+      --warn:       #D7AE55;
+      --crit:       #E0836F;
+      --ok-bg:      #1B2A22;
+      --warn-bg:    #2C2519;
+      --crit-bg:    #2E1D19;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #0F1412;
+    --surface:    #161C19;
+    --surface-2:  #1E2622;
+    --ink:        #E4E9E5;
+    --ink-soft:   #B6C0BA;
+    --muted:      #8C968F;
+    --rule:       #303B35;
+    --rule-soft:  #262F2A;
+    --accent:     #58B7B3;
+    --accent-dim: #3E8B88;
+    --ok:         #6FBE92;
+    --warn:       #D7AE55;
+    --crit:       #E0836F;
+    --ok-bg:      #1B2A22;
+    --warn-bg:    #2C2519;
+    --crit-bg:    #2E1D19;
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    margin: 0;
+    padding: var(--s5) var(--s3) var(--s6);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 62rem; margin: 0 auto; }
+  .col  { max-width: var(--measure); }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px;
+  }
+
+  /* ---------- masthead ---------- */
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 var(--s3);
+  }
+  h1 {
+    font-family: Newsreader, Georgia, "Times New Roman", serif;
+    font-weight: 500; font-size: clamp(2.3rem, 5.6vw, 3.5rem);
+    line-height: 1.08; letter-spacing: -0.015em;
+    text-wrap: balance; margin: 0 0 var(--s3); max-width: 20ch;
+  }
+  .standfirst {
+    font-family: Newsreader, Georgia, serif;
+    font-size: clamp(1.1rem, 2.2vw, 1.32rem); line-height: 1.5;
+    color: var(--ink-soft); max-width: 56ch; margin: 0 0 var(--s4);
+  }
+  .byline {
+    display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4);
+    font-family: "IBM Plex Mono", monospace; font-size: 0.76rem;
+    color: var(--muted); padding-top: var(--s3);
+    border-top: 1px solid var(--rule);
+  }
+  .byline b { color: var(--ink-soft); font-weight: 500; }
+
+  /* ---------- the dotted leader, lifted from the form itself ---------- */
+  .leader {
+    display: flex; align-items: baseline; gap: var(--s2);
+    margin: var(--s6) 0 var(--s4);
+  }
+  .leader-label {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent); white-space: nowrap; flex: none;
+  }
+  .leader-fill {
+    flex: 1 1 auto; height: 0.55em;
+    border-bottom: 2px dotted var(--rule);
+  }
+  .leader-note {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    color: var(--muted); white-space: nowrap; flex: none;
+  }
+
+  h2 {
+    font-family: Newsreader, Georgia, serif; font-weight: 500;
+    font-size: clamp(1.55rem, 3.2vw, 2rem); line-height: 1.2;
+    letter-spacing: -0.01em; text-wrap: balance;
+    margin: 0 0 var(--s3); max-width: 30ch;
+  }
+  h3 {
+    font-size: 1rem; font-weight: 600; letter-spacing: 0.005em;
+    margin: var(--s4) 0 var(--s2); color: var(--ink);
+  }
+  p { margin: 0 0 var(--s3); }
+  .col > p:last-child { margin-bottom: 0; }
+
+  strong { font-weight: 600; }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.87em; font-variant-numeric: tabular-nums;
+  }
+  code {
+    background: var(--surface-2); padding: 0.1em 0.35em;
+    border-radius: 2px; color: var(--ink-soft);
+  }
+
+  /* ---------- pipeline ---------- */
+  .stages { display: grid; gap: 1px; background: var(--rule-soft); border: 1px solid var(--rule-soft); }
+  .stage {
+    display: grid; grid-template-columns: 2.6rem 1fr auto;
+    gap: var(--s3); align-items: baseline;
+    background: var(--surface); padding: var(--s3);
+  }
+  .stage-n {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.8rem;
+    color: var(--muted); font-variant-numeric: tabular-nums;
+  }
+  .stage-name { font-weight: 500; }
+  .stage-name span { display: block; font-weight: 400; font-size: 0.88rem; color: var(--muted); }
+
+  .chip {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.68rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.22em 0.6em; border-radius: 2px; white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .chip-ok   { background: var(--ok-bg);   color: var(--ok);   border-color: var(--ok); }
+  .chip-warn { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+  .chip-crit { background: var(--crit-bg); color: var(--crit); border-color: var(--crit); }
+
+  /* ---------- data ---------- */
+  .scroll { overflow-x: auto; margin: var(--s3) 0; }
+  table {
+    border-collapse: collapse; width: 100%; min-width: 30rem;
+    font-size: 0.9rem; font-variant-numeric: tabular-nums;
+  }
+  caption {
+    text-align: left; font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem; letter-spacing: 0.06em; color: var(--muted);
+    padding-bottom: var(--s2);
+  }
+  th, td { text-align: left; padding: var(--s2) var(--s3) var(--s2) 0; border-bottom: 1px solid var(--rule-soft); }
+  th {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.7rem;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted);
+    font-weight: 500; border-bottom-color: var(--rule);
+  }
+  td.num, th.num { text-align: right; padding-right: var(--s3); font-family: "IBM Plex Mono", monospace; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ---------- callouts ---------- */
+  .note {
+    background: var(--surface); border-left: 3px solid var(--accent);
+    padding: var(--s3) var(--s4); margin: var(--s4) 0;
+  }
+  .note.crit { border-left-color: var(--crit); }
+  .note h3 { margin-top: 0; }
+  .note > :last-child { margin-bottom: 0; }
+
+  .figure { margin: var(--s4) 0; }
+  .figure figcaption {
+    font-size: 0.84rem; color: var(--muted); margin-top: var(--s2);
+    max-width: 60ch;
+  }
+  svg { display: block; max-width: 100%; height: auto; }
+
+  /* ---------- the ask ---------- */
+  .asks { display: grid; gap: var(--s3); margin: var(--s4) 0 0; padding: 0; list-style: none; }
+  .ask {
+    display: grid; grid-template-columns: 2.2rem 1fr; gap: var(--s3);
+    background: var(--surface); padding: var(--s3) var(--s4);
+    border: 1px solid var(--rule-soft);
+  }
+  .ask-n {
+    font-family: Newsreader, Georgia, serif; font-size: 1.6rem;
+    line-height: 1; color: var(--accent-dim);
+  }
+  .ask h3 { margin: 0 0 var(--s1); }
+  .ask p { margin: 0; font-size: 0.94rem; color: var(--ink-soft); }
+
+  .quiet { color: var(--muted); font-size: 0.9rem; }
+
+  footer {
+    margin-top: var(--s6); padding-top: var(--s3);
+    border-top: 1px solid var(--rule); color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  @media (max-width: 34rem) {
+    .stage { grid-template-columns: 2rem 1fr; }
+    .stage .chip { grid-column: 2; justify-self: start; margin-top: var(--s1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Project status &middot; ai-htr</p>
+    <h1>Reading blood pressure off hospital OPD cards</h1>
+    <p class="standfirst">
+      The cropping half of the pipeline is built and measured. The reading half does
+      not work, and the thing blocking it is paper, not code.
+    </p>
+    <div class="byline">
+      <span><b>Prepared</b> 26 August 2026</span>
+      <span><b>Scope</b> v1 &mdash; blood pressure, 4 form templates</span>
+      <span><b>Runs</b> entirely offline</span>
+    </div>
+  </header>
+
+  <div class="leader">
+    <span class="leader-label">Summary</span>
+    <span class="leader-fill"></span>
+    <span class="leader-note">where things stand</span>
+  </div>
+
+  <div class="col">
+    <p>
+      The system takes a scanned or photographed hospital outpatient card and pulls the
+      blood pressure out of it, in two halves: <strong>find and crop</strong> the field on
+      the page, then <strong>read</strong> the handwriting inside it. Everything runs on a
+      single local machine, because the eventual inputs are patient records.
+    </p>
+    <p>
+      Stages 0 through 3 &mdash; everything up to and including the crop &mdash; are built
+      and measured. Stage 4, the reader, is wired end to end but is not usable: it turns a
+      real <code>143/90</code> into <code>111/10</code>. No machine-learning model has been
+      trained or downloaded at any point; the current reader is a template-matching baseline
+      with zero learned parameters, which is precisely why it fails.
+    </p>
+  </div>
+
+  <div class="stages" style="margin-top: var(--s4)">
+    <div class="stage">
+      <span class="stage-n">0</span>
+      <span class="stage-name">Normalize<span>dewarp, deskew, denoise</span></span>
+      <span class="chip chip-ok">Measured</span>
+    </div>
+    <div class="stage">
+      <span class="stage-n">1</span>
+      <span class="stage-name">Identify form<span>feature match against every template</span></span>
+      <span class="chip chip-ok">Measured</span>
+    </div>
+    <div class="stage">
+      <span class="stage-n">2</span>
+      <span class="stage-name">Register<span>warp the page into canonical space</span></span>
+      <span class="chip chip-ok">Measured</span>
+    </div>
+    <div class="stage">
+      <span class="stage-n">3</span>
+      <span class="stage-name">Crop &amp; refine<span>fixed boxes per form, grown to fit the ink</span></span>
+      <span class="chip chip-warn">Gap found</span>
+    </div>
+    <div class="stage">
+      <span class="stage-n">4</span>
+      <span class="stage-name">Read<span>handwriting to two integers</span></span>
+      <span class="chip chip-crit">Not usable</span>
+    </div>
+    <div class="stage">
+      <span class="stage-n">5</span>
+      <span class="stage-name">Clinical validation<span>plausibility and cross-checking</span></span>
+      <span class="chip chip-warn">Gap found</span>
+    </div>
+  </div>
+
+  <p class="quiet" style="margin-top: var(--s3)">
+    123 automated tests passing &middot; 4 form templates configured &middot; ~0.4&thinsp;s per page
+  </p>
+
+  <div class="leader">
+    <span class="leader-label">Evidence</span>
+    <span class="leader-fill"></span>
+    <span class="leader-note">what has been measured</span>
+  </div>
+
+  <div class="col">
+    <h2>Cropping holds up under degradation</h2>
+    <p>
+      With one real scan per form, comparing a page against a template built from that same
+      page measures nothing. So robustness is tested by <strong>synthetic perturbation</strong>:
+      warp a page by a transform we chose, add the damage a phone camera adds, and ask the
+      pipeline to recover it. Because the transform is known, the ground truth is exact.
+    </p>
+    <p>
+      The measure is <strong>coverage</strong>, not overlap. A crop that clips a digit has
+      failed however good its overlap score; extra whitespace costs nothing. That choice is
+      clinical, not aesthetic &mdash; a clipped leading digit turns 143 into 43.
+    </p>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <caption>Crop coverage of the true field, by degradation level</caption>
+      <thead>
+        <tr><th>Level</th><th class="num">Mean</th><th class="num">Minimum</th><th>Form ID &amp; registration</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Clean</td><td class="num">0.996</td><td class="num">0.973</td><td>32 / 32</td></tr>
+        <tr><td>Mild</td><td class="num">0.996</td><td class="num">0.973</td><td>32 / 32</td></tr>
+        <tr><td>Moderate</td><td class="num">0.996</td><td class="num">0.973</td><td>32 / 32</td></tr>
+        <tr><td>Heavy</td><td class="num">0.996</td><td class="num">0.973</td><td>27 / 32</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <p>
+      Coverage is flat from clean to heavy. Registration error is sub-pixel &mdash; mean
+      0.35&thinsp;px against a BP field roughly 175&thinsp;&times;&thinsp;73&thinsp;px.
+      Of the five heavy-degradation failures, <strong>all five were refusals and none was a
+      misidentification</strong>: the system reported "unknown form" rather than cropping
+      against a guess. That asymmetry is deliberate and is the single most important property
+      of the design.
+    </p>
+  </div>
+
+  <div class="leader">
+    <span class="leader-label">Problem</span>
+    <span class="leader-fill"></span>
+    <span class="leader-note">stage 4</span>
+  </div>
+
+  <div class="col">
+    <h2>The reader does not work, and it knows too little to know it</h2>
+    <p>
+      The current reader compares each handwritten glyph against 198 templates rendered from
+      a vector font library. On the one genuinely filled BP field available, it reads two of
+      six characters correctly. The three digits it gets wrong &mdash; 4, 3 and 9 &mdash; all
+      collapse to the same answer, 1.
+    </p>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <caption>Glyph-by-glyph output on the real field, true value 143/90</caption>
+      <thead>
+        <tr><th>Written</th><th>Read as</th><th class="num">Match score</th><th>Self-assessment</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>1</td><td class="num">0.577</td><td>confident</td></tr>
+        <tr><td>4</td><td>1</td><td class="num">0.544</td><td>flagged</td></tr>
+        <tr><td>3</td><td>1</td><td class="num">0.647</td><td><strong>confident</strong></td></tr>
+        <tr><td>/</td><td>/</td><td class="num">0.725</td><td>confident</td></tr>
+        <tr><td>9</td><td>1</td><td class="num">0.562</td><td><strong>confident</strong></td></tr>
+        <tr><td>0</td><td>0</td><td class="num">0.743</td><td>confident</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <p>
+      Two of the three wrong answers were reported as confident. The confidence figure is
+      therefore not merely imprecise, it is <strong>uninformative</strong>: every score sits
+      in a narrow band around 0.55&ndash;0.75 regardless of whether the answer is right, so
+      there is no threshold that separates good readings from bad ones.
+    </p>
+    <p>
+      Worth separating clearly, because it changes what needs fixing:
+      <strong>the segmentation is already correct.</strong> On real degraded handwriting the
+      system isolates all six characters in the right places. Only the final
+      classification step fails. That narrows the problem considerably.
+    </p>
+  </div>
+
+  <div class="leader">
+    <span class="leader-label">New</span>
+    <span class="leader-fill"></span>
+    <span class="leader-note">this week</span>
+  </div>
+
+  <div class="col">
+    <h2>A test set built from real ink</h2>
+    <p>
+      To test the cropping properly, the pipeline needs pages where the handwriting sits in a
+      known but awkward position. Rendering numbers in a font would not do &mdash; the reader's
+      own templates come from those same fonts, so any score measured that way grades the
+      system against its own answer sheet.
+    </p>
+    <p>
+      Instead the generator <strong>harvests the real pen strokes already on the card</strong>
+      and recomposes them into new values. Reviewing the source page turned up more genuine
+      handwritten digits than expected: the triage sticker's vitals block carries temperature,
+      pulse, respiratory rate and oxygen saturation alongside the blood pressure. That yields
+      real ink for seven of the ten digits.
+    </p>
+    <p>
+      From these, the generator produces pages carrying arbitrary plausible readings, with the
+      value displaced from its box, the page tilted and warped, and the triage sticker itself
+      relocated &mdash; all with exact ground truth.
+      <span class="quiet">Digits 5, 7 and 8 do not appear anywhere on the source page and
+      remain untested.</span>
+    </p>
+  </div>
+
+  <div class="note">
+    <h3>What that immediately found</h3>
+    <p>
+      Two defects that the previous test data could not have surfaced, both in code that had
+      already been measured as working.
+    </p>
+  </div>
+
+  <div class="col">
+    <h3>1 &middot; Crop refinement cannot follow ink downward</h3>
+    <p>
+      The crop box grows sideways to catch a value written wide, but will not grow down to
+      catch one written low. Splitting the same twelve pages by which way the handwriting
+      moved:
+    </p>
+  </div>
+
+  <figure class="figure">
+    <svg viewBox="0 0 720 330" role="img" aria-label="Scatter plot of crop coverage against vertical displacement. All nine cases where the handwriting moved up or stayed level score above 95 percent. All three cases where it moved down fall below 91 percent, the worst reaching 35 percent.">
+      <defs>
+        <pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--crit)" stroke-width="1" opacity="0.18"/>
+        </pattern>
+      </defs>
+
+      <rect x="360" y="18" width="300" height="252" fill="url(#hatch)"/>
+
+      <!-- gridlines + y labels -->
+      <g stroke="var(--rule-soft)" stroke-width="1">
+        <line x1="60" y1="270" x2="660" y2="270"/>
+        <line x1="60" y1="207" x2="660" y2="207"/>
+        <line x1="60" y1="144" x2="660" y2="144"/>
+        <line x1="60" y1="81"  x2="660" y2="81"/>
+        <line x1="60" y1="18"  x2="660" y2="18"/>
+      </g>
+      <g fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="end">
+        <text x="52" y="274">0%</text>
+        <text x="52" y="211">25%</text>
+        <text x="52" y="148">50%</text>
+        <text x="52" y="85">75%</text>
+        <text x="52" y="22">100%</text>
+      </g>
+
+      <!-- 95% threshold -->
+      <line x1="60" y1="30.6" x2="660" y2="30.6" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" opacity="0.75"/>
+      <text x="664" y="34" fill="var(--accent)" font-family="IBM Plex Mono, monospace" font-size="10">95%</text>
+
+      <!-- centre axis: dy = 0 -->
+      <line x1="360" y1="10" x2="360" y2="286" stroke="var(--rule)" stroke-width="1.5"/>
+
+      <!-- points: x = 360 + dy*7.5 , y = 270 - cov*252 -->
+      <g fill="var(--ok)">
+        <circle cx="277.5" cy="19.3" r="5.5"/>
+        <circle cx="322.5" cy="30.1" r="5.5"/>
+        <circle cx="330"   cy="18"   r="5.5"/>
+        <circle cx="127.5" cy="21.5" r="5.5"/>
+        <circle cx="255"   cy="18"   r="5.5"/>
+        <circle cx="60"    cy="23"   r="5.5"/>
+        <circle cx="112.5" cy="18"   r="5.5"/>
+        <circle cx="217.5" cy="18"   r="5.5"/>
+        <circle cx="112.5" cy="19.3" r="5.5"/>
+      </g>
+      <g fill="var(--crit)">
+        <circle cx="570" cy="59.8"  r="5.5"/>
+        <circle cx="442.5" cy="41.4" r="5.5"/>
+        <circle cx="652.5" cy="180.8" r="7"/>
+      </g>
+
+      <text x="640" y="200" fill="var(--crit)" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="end">35.4%</text>
+
+      <!-- x axis -->
+      <g fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">
+        <text x="60"  y="303">&minus;40</text>
+        <text x="210" y="303">&minus;20</text>
+        <text x="360" y="303">0</text>
+        <text x="510" y="303">+20</text>
+        <text x="660" y="303">+40</text>
+      </g>
+      <text x="210" y="322" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif" font-size="11.5" text-anchor="middle">handwriting sits higher</text>
+      <text x="510" y="322" fill="var(--crit)" font-family="IBM Plex Sans, sans-serif" font-size="11.5" text-anchor="middle">handwriting sits lower</text>
+    </svg>
+    <figcaption>
+      Crop coverage against vertical displacement, in pixels, across twelve generated pages.
+      Every case that falls short is on the right-hand side.
+    </figcaption>
+  </figure>
+
+  <div class="scroll">
+    <table>
+      <caption>The same twelve pages, split by direction</caption>
+      <thead>
+        <tr><th>Handwriting moved</th><th class="num">Pages</th><th class="num">Mean coverage</th><th class="num">Worst</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Up, or level</td><td class="num">9</td><td class="num">99.0%</td><td class="num">95.2%</td></tr>
+        <tr><td>Down</td><td class="num">3</td><td class="num">69.8%</td><td class="num">35.4%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <p>
+      Sideways displacement of up to 80&thinsp;px is absorbed without difficulty. A downward
+      displacement of 39&thinsp;px removes two thirds of the value from the crop.
+    </p>
+
+    <h3>2 &middot; A missed field is not treated as a disagreement</h3>
+    <p>
+      On the worst page above, the pipeline did not report a bad reading. It reported
+      <strong>no reading at all</strong> &mdash; it marked the field empty. The page carries a
+      blood pressure of 160/102.
+    </p>
+  </div>
+
+  <div class="note crit">
+    <h3>Why this one matters more than a wrong number</h3>
+    <p>
+      The design's central safety property is that the base card and the triage sticker record
+      the same visit twice, so the two readings can be cross-checked against each other with no
+      reference data at all. On this page the sticker was read correctly at full coverage.
+    </p>
+    <p style="margin-top: var(--s2)">
+      But the cross-check compares readings that <em>exist</em>. With the base card contributing
+      nothing, only one reading remained, and one reading is treated as
+      "nothing to cross-check" &mdash; so the page passed as plausible. An absent field currently
+      counts as no information, rather than as a contradiction with a source that does have a
+      value. A wrong number would have been caught. A missing one was not.
+    </p>
+  </div>
+
+  <div class="col">
+    <p>
+      Both defects are fixable and neither is deep. The point worth taking is that the existing
+      measurements did not reveal them, and a test set built from real ink did so within a day.
+    </p>
+  </div>
+
+  <div class="leader">
+    <span class="leader-label">Constraint</span>
+    <span class="leader-fill"></span>
+    <span class="leader-note">read before trusting any accuracy figure</span>
+  </div>
+
+  <div class="col">
+    <p>
+      Every source page currently available has been through messaging-app compression and
+      arrives at roughly <strong>103 dpi</strong>. The document-scanning standard is 300 dpi and
+      optical character recognition generally wants 200 as a floor. At 103 dpi a handwritten
+      <code>143/90</code> occupies about 60&thinsp;&times;&thinsp;25&thinsp;px, and 8&thinsp;pt
+      printed Thai is around 11&thinsp;px tall &mdash; effectively unreadable.
+    </p>
+    <p>
+      This does not affect the cropping stages, which have ample features to work with at that
+      resolution. It caps the reader, and the digits in a vitals block are exactly the
+      highest-stakes characters on the page.
+    </p>
+    <p>
+      Internally the system already works at 300 dpi, so better scans need no configuration
+      changes when they arrive.
+    </p>
+  </div>
+
+  <div class="leader">
+    <span class="leader-label">Request</span>
+    <span class="leader-fill"></span>
+    <span class="leader-note">what would unblock this</span>
+  </div>
+
+  <div class="col">
+    <h2>The bottleneck is paper, not engineering</h2>
+    <p>
+      Three genuinely filled blood-pressure fields exist in the entire corpus, and all three are
+      on the same card, in one person's handwriting, recording the same measurement. No reader
+      &mdash; template-based, trained, or commercial &mdash; can be honestly evaluated against
+      that. Reporting an accuracy figure from a single example would be meaningless, and the
+      project has deliberately not done so.
+    </p>
+  </div>
+
+  <ol class="asks">
+    <li class="ask">
+      <span class="ask-n">1</span>
+      <div>
+        <h3>20&ndash;30 filled OPD cards</h3>
+        <p>
+          The binding constraint. Enough distinct handwriting to measure a reader at all, and to
+          establish whether errors cluster by writer, by pen, or by field. Fully de-identified is
+          fine &mdash; only the vitals block is needed.
+        </p>
+      </div>
+    </li>
+    <li class="ask">
+      <span class="ask-n">2</span>
+      <div>
+        <h3>One blank base OPD card</h3>
+        <p>
+          Dissolves three separate problems at once. The current template is a filled page with a
+          sticker attached to it, which forces the system to work around content that is not part
+          of the form. A clean blank would remove that compromise from template matching, field
+          registration, and the crop-refinement constants together.
+        </p>
+      </div>
+    </li>
+    <li class="ask">
+      <span class="ask-n">3</span>
+      <div>
+        <h3>Scans at 300 dpi</h3>
+        <p>
+          A flatbed or department scanner rather than a phone photograph forwarded through a
+          messaging app. This costs nothing and roughly triples the pixels on every digit.
+        </p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="leader">
+    <span class="leader-label">Caveats</span>
+    <span class="leader-fill"></span>
+    <span class="leader-note">stated plainly</span>
+  </div>
+
+  <div class="col">
+    <ul>
+      <li><strong>Every figure in this report is synthetic.</strong> Nothing has been tested against a second real scan of any form.</li>
+      <li><strong>One writer.</strong> All harvested handwriting comes from a single person on a single page, so it shows nothing about variation between writers.</li>
+      <li><strong>Digits 5, 7 and 8 are untested</strong> &mdash; they do not appear on the source page.</li>
+      <li><strong>Only one field archetype is implemented.</strong> Checkboxes, circled Y/N tokens and grid cells are declared but unmeasured. Diagram fields are deferred as a research problem.</li>
+      <li><strong>The degradation levels in the newest test set are not directly comparable to one another</strong>, because displacement was drawn at random rather than held fixed across them. The up-versus-down split above is unaffected by this.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p>
+      Runs entirely offline on a single workstation; no patient data leaves the machine, and no
+      scans or identifiers are reproduced in this report. Prepared 26 August 2026.
+    </p>
+  </footer>
+
+</div>

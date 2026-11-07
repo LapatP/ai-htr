@@ -1,0 +1,25 @@
+form_id: ms-form-v2_4
+name: "MS form ver 2.4 (68.01.30) - standalone insert sheet"
+print_run:                   # no hospital print code; self-labelled bottom-LEFT
+template: data/templates/ms-form-v2_4.png
+page_size_px: [2480, 3508]
+
+# NOTE: this sheet carries no hospital header at all, so form identification
+# cannot rely on the header block. Feature matching over the whole page.
+fields:
+  - id: screening.bp.systolic
+    label: "Screening BP systolic"
+    type: line_value
+    bp_pattern: B            # "BP [__]/[__] mmHg"
+    reader: bp_pair_split
+    unit: mmHg
+    bbox: [578, 1192, 670, 1234]
+    context_bbox: [528, 1174, 720, 1252]
+  - id: screening.bp.diastolic
+    label: "Screening BP diastolic"
+    type: line_value
+    bp_pattern: B
+    reader: bp_pair_split
+    unit: mmHg
+    bbox: [686, 1192, 768, 1234]
+    context_bbox: [641, 1174, 813, 1252]

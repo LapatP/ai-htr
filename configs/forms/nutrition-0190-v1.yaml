@@ -1,0 +1,16 @@
+form_id: nutrition-0190-v1
+name: "Nutrition Clinic 0190 - คลินิกโภชนาการ"
+print_run: "3591"
+extends: base-opd-card-v1
+template: data/templates/nutrition-0190-v1.png
+page_size_px: [2480, 3508]
+
+fields:
+  - id: vitals.bp
+    label: "BP on the Vital Signs & Body weight line"
+    type: line_value
+    bp_pattern: A            # "T __ P __ R __ BP [____] mmHg"
+    reader: bp_pair_single
+    unit: mmHg
+    bbox: [995, 1462, 1098, 1515]
+    context_bbox: [939, 1439, 1154, 1538]

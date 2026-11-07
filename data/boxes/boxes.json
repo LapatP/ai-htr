@@ -1,0 +1,19 @@
+{
+  "base-opd-card-v1": {
+    "__region__.triage-card-v1": [252, 962, 1342, 2118],
+    "bp": [2008, 538, 2226, 664],
+    "bp.systolic": [620, 1534, 694, 1600],
+    "bp.diastolic": [752, 1535, 832, 1601]
+  },
+  "ms-form-v2_4": {
+    "screening.bp.systolic": [578, 1192, 670, 1234],
+    "screening.bp.diastolic": [686, 1192, 768, 1234]
+  },
+  "neuro-v1": {
+    "risk.home_sbp": [478, 2752, 708, 2810],
+    "risk.home_dbp": [800, 2752, 1068, 2810]
+  },
+  "nutrition-0190-v1": {
+    "vitals.bp": [995, 1462, 1098, 1515]
+  }
+}

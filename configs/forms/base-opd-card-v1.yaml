@@ -1,0 +1,40 @@
+form_id: base-opd-card-v1
+name: "แบบเวชระเบียนผู้ป่วยนอก - base hospital OPD card"
+print_run: "851"
+template: data/templates/base-opd-card-v1.png
+page_size_px: [2480, 3508]   # A4 @ 300 dpi
+
+fields:
+  - id: bp
+    label: "BP (top vitals block)"
+    type: line_value
+    bp_pattern: A            # one blank; writer supplies the slash: "143/90"
+    reader: bp_pair_single
+    unit: mmHg
+    bbox: [2008, 538, 2226, 664]
+    context_bbox: [1889, 482, 2345, 720]
+
+# The triage screening sheet is glued on by hand, so its position varies per
+# page. It must be LOCATED before its fields can be cropped.
+inserts:
+  - id: triage-card-v1
+    template: data/templates/triage-card-v1.png
+    locate: feature_match
+    fields:
+      - id: bp.systolic
+        label: "Triage BP systolic"
+        type: line_value
+        bp_pattern: B        # two blanks flanking a PRINTED slash
+        reader: bp_pair_split
+        unit: mmHg
+        bbox: [368, 572, 442, 638]
+        context_bbox: [328, 543, 482, 667]
+      - id: bp.diastolic
+        label: "Triage BP diastolic"
+        type: line_value
+        bp_pattern: B
+        reader: bp_pair_split
+        unit: mmHg
+        bbox: [500, 573, 580, 639]
+        context_bbox: [456, 544, 624, 668]
+    source_region: [252, 962, 1342, 2118]

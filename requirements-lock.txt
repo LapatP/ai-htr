@@ -1,0 +1,27 @@
+# Exact versions of the environment that produced every measurement quoted in
+# README.md and docs/cropping-evaluation.md. Frozen 2026-11-07 on CPython
+# 3.12.10 (win_amd64).
+#
+# Use this, not requirements.txt, when the point is to REPRODUCE a number:
+#
+#     pip install -r requirements-lock.txt
+#     pip install -e . --no-deps
+#
+# requirements.txt keeps loose `>=` ranges, which is right for development but
+# wrong for reproduction: cropping coverage comes out of OpenCV's feature
+# matching, so a newer OpenCV can legitimately shift the scores with no change
+# to this code. If you quote a figure in a report, quote the commit AND say it
+# was measured against this file.
+#
+# wheels/ in an export is built FROM this file, so an offline install and a
+# networked one land on the same versions.
+colorama==0.4.6
+iniconfig==2.3.0
+numpy==2.5.2
+opencv-python==5.0.0.93
+packaging==26.3
+pluggy==1.6.0
+Pygments==2.21.0
+pytest==9.1.1
+PyYAML==6.0.3
+ruamel.yaml==0.19.1

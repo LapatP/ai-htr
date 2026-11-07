@@ -1,0 +1,82 @@
+#!/bin/sh
+#
+# Refuse to commit patient-derived material, per-export bundles, or any large
+# binary -- even when .gitignore has been bypassed with `git add -f`.
+#
+# Every template in this project is cut from a real OPD card, so the templates
+# ARE patient pages. .gitignore stops an accident; it does not stop a
+# deliberate `-f`, and this repository sits one folder away from real scans.
+# This hook is the backstop for the case where the remote is someone else's
+# server.
+#
+# Hooks are not themselves cloned, so install it in every clone:
+#
+#     git config core.hooksPath scripts/hooks
+#
+# To override for a commit you have actually thought about:
+#
+#     git commit --no-verify
+#
+set -u
+
+MAX_BYTES=2097152          # 2 MiB; no source file in this project is close
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# --- folders that hold patient pages or per-export bundles ------------------
+bad_path=$(printf '%s\n' "$staged" | grep -Ei \
+    -e '^data/raw/'      \
+    -e '^data/interim/'  \
+    -e '^testdata/'      \
+    -e '^wheels/'        \
+    -e '^out(-synth|-trace|-offset|-testdata)?/' \
+    -e '^docs/box-tool\.html$')
+
+# data/inbox/ is tracked for its README and nothing else
+bad_inbox=$(printf '%s\n' "$staged" | grep -E '^data/inbox/' \
+    | grep -v '^data/inbox/README\.txt$')
+
+# --- file types that should never appear: this project tracks no images -----
+bad_type=$(printf '%s\n' "$staged" \
+    | grep -Ei '\.(png|jpg|jpeg|tif|tiff|bmp|pdf|whl|zip)$')
+
+# --- anything unexpectedly large, whatever it is named ---------------------
+oversize=$(printf '%s\n' "$staged" | while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    obj=$(git ls-files -s -- "$f" | awk '{print $2}')
+    [ -n "$obj" ] || continue
+    size=$(git cat-file -s "$obj" 2>/dev/null || echo 0)
+    [ "$size" -gt "$MAX_BYTES" ] && printf '%s (%s bytes)\n' "$f" "$size"
+done)
+
+if [ -z "$bad_path" ] && [ -z "$bad_inbox" ] && [ -z "$bad_type" ] \
+   && [ -z "$oversize" ]; then
+    exit 0
+fi
+
+echo "pre-commit REFUSED: this commit contains material that must stay local."
+echo
+
+if [ -n "$bad_path" ] || [ -n "$bad_inbox" ]; then
+    echo "  Patient-derived or generated, excluded by .gitignore:"
+    [ -n "$bad_path" ]  && printf '%s\n' "$bad_path"  | sed 's/^/    /'
+    [ -n "$bad_inbox" ] && printf '%s\n' "$bad_inbox" | sed 's/^/    /'
+    echo
+fi
+
+if [ -n "$bad_type" ]; then
+    echo "  Image, PDF or archive. This project tracks none -- a scan?"
+    printf '%s\n' "$bad_type" | sed 's/^/    /'
+    echo
+fi
+
+if [ -n "$oversize" ]; then
+    echo "  Over 2 MiB. Source files here are kilobytes:"
+    printf '%s\n' "$oversize" | sed 's/^/    /'
+    echo
+fi
+
+echo "  Unstage it:   git restore --staged <path>"
+echo "  Override it:  git commit --no-verify   (and say why in the message)"
+exit 1

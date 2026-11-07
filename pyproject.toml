@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aihtr"
+version = "0.1.0"
+description = "Field extraction from hospital OPD cards"
+requires-python = ">=3.10"
+dependencies = [
+    "opencv-python>=5.0",
+    "numpy>=2.0",
+    "pyyaml>=6.0",
+    "ruamel.yaml>=0.18",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+# scripts/opd_sample_sheet.py only — builds a Word-ready figure set from the
+# AnneSI synthetic release. Nothing in src/ imports either package.
+samples = ["pillow>=10.0", "python-docx>=1.1"]
+
+# Installed editable (`pip install -e .`) so `python -m aihtr` and the `aihtr`
+# command work from any directory, with no PYTHONPATH to remember. Editable
+# means edits to src/ take effect immediately — no reinstall.
+[project.scripts]
+aihtr = "aihtr.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

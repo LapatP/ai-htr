@@ -1,0 +1,6 @@
+# CPU baseline (stages 0-3). No torch yet - see CLAUDE.md for the cu128 note.
+opencv-python>=5.0
+numpy>=2.0
+pyyaml>=6.0
+ruamel.yaml>=0.18
+pytest>=8.0

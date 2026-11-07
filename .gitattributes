@@ -1,0 +1,10 @@
+# Git for Windows sets core.autocrlf=true, which rewrites LF to CRLF on
+# checkout. A shell script with CRLF endings does not run at all -- sh reports
+#   /bin/sh^M: bad interpreter: No such file or directory
+# -- so the commit hook would be silently dead in every fresh clone on
+# Windows. Pin it to LF regardless of the cloning machine's settings.
+scripts/hooks/*  text eol=lf
+*.sh             text eol=lf
+
+# Windows batch genuinely wants CRLF.
+*.cmd            text eol=crlf
